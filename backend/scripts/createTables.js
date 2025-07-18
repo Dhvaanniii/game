@@ -11,9 +11,10 @@ const createTables = async () => {
     await createUserProgressTable();
     
     // 3. UserSubscriptions Table
-    await createUserSubscriptionsTable();
+    // await createUserSubscriptionsTable(); // This table is removed from the schema
     
     // 4. Levels Table
+    await createUserLevelAccessTable();
     await createLevelsTable();
     
     console.log('All tables created successfully!');
@@ -57,21 +58,21 @@ const createUserProgressTable = async () => {
     TableName: TABLES.USER_PROGRESS,
     KeySchema: [
       {
-        AttributeName: 'userId',
+        AttributeName: 'user_id',
         KeyType: 'HASH' // Partition key
       },
       {
-        AttributeName: 'progressKey',
+        AttributeName: 'level_number',
         KeyType: 'RANGE' // Sort key
       }
     ],
     AttributeDefinitions: [
       {
-        AttributeName: 'userId',
+        AttributeName: 'user_id',
         AttributeType: 'S'
       },
       {
-        AttributeName: 'progressKey',
+        AttributeName: 'level_number',
         AttributeType: 'S'
       }
     ],
@@ -90,38 +91,29 @@ const createUserProgressTable = async () => {
   }
 };
 
-const createUserSubscriptionsTable = async () => {
+const createUserLevelAccessTable = async () => {
   const params = {
-    TableName: TABLES.USER_SUBSCRIPTIONS,
+    TableName: TABLES.USER_LEVEL_ACCESS,
     KeySchema: [
       {
-        AttributeName: 'userId',
+        AttributeName: 'user_id',
         KeyType: 'HASH' // Partition key
-      },
-      {
-        AttributeName: 'subscriptionKey',
-        KeyType: 'RANGE' // Sort key
       }
     ],
     AttributeDefinitions: [
       {
-        AttributeName: 'userId',
-        AttributeType: 'S'
-      },
-      {
-        AttributeName: 'subscriptionKey',
+        AttributeName: 'user_id',
         AttributeType: 'S'
       }
     ],
     BillingMode: 'PAY_PER_REQUEST'
   };
-
   try {
     await dynamodb.createTable(params).promise();
-    console.log('✓ UserSubscriptions table created successfully');
+    console.log('✓ UserLevelAccess table created successfully');
   } catch (error) {
     if (error.code === 'ResourceInUseException') {
-      console.log('✓ UserSubscriptions table already exists');
+      console.log('✓ UserLevelAccess table already exists');
     } else {
       throw error;
     }
@@ -133,13 +125,13 @@ const createLevelsTable = async () => {
     TableName: TABLES.LEVELS,
     KeySchema: [
       {
-        AttributeName: 'levelId',
+        AttributeName: 'category_level_id',
         KeyType: 'HASH' // Partition key
       }
     ],
     AttributeDefinitions: [
       {
-        AttributeName: 'levelId',
+        AttributeName: 'category_level_id',
         AttributeType: 'S'
       }
     ],

@@ -150,21 +150,21 @@ class User {
   static async updateProfile(userId, updateData) {
     const updateExpression = [];
     const expressionAttributeValues = {};
-    
+    const expressionAttributeNames = {};
     Object.keys(updateData).forEach(key => {
       if (key !== 'userId' && key !== 'password') {
-        updateExpression.push(`${key} = :${key}`);
+        updateExpression.push(`#${key} = :${key}`);
+        expressionAttributeNames[`#${key}`] = key;
         expressionAttributeValues[`:${key}`] = updateData[key];
       }
     });
-
     const params = {
       TableName: TABLES.USERS,
       Key: { userId },
       UpdateExpression: `SET ${updateExpression.join(', ')}`,
-      ExpressionAttributeValues: expressionAttributeValues
+      ExpressionAttributeValues: expressionAttributeValues,
+      ExpressionAttributeNames: expressionAttributeNames
     };
-
     try {
       await docClient.update(params).promise();
     } catch (error) {

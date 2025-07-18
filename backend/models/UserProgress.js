@@ -3,8 +3,8 @@ const { docClient, TABLES } = require('../config/dynamodb');
 class UserProgress {
   static async create(progressData) {
     const progress = {
-      userId: progressData.userId, // Partition key
-      progressKey: progressData.progressKey, // Sort key - e.g., "TANGLE_L1" or "FUNTHINKER_BASIC_L1"
+      user_id: progressData.user_id, // Partition key
+      level_number: progressData.level_number, // Sort key
       levelId: progressData.levelId,
       category: progressData.category,
       subpart: progressData.subpart || 'none',
@@ -31,12 +31,12 @@ class UserProgress {
     }
   }
 
-  static async findByUser(userId) {
+  static async findByUser(user_id) {
     const params = {
       TableName: TABLES.USER_PROGRESS,
-      KeyConditionExpression: 'userId = :userId',
+      KeyConditionExpression: 'user_id = :user_id',
       ExpressionAttributeValues: {
-        ':userId': userId
+        ':user_id': user_id
       }
     };
 
@@ -48,12 +48,12 @@ class UserProgress {
     }
   }
 
-  static async findByUserAndLevel(userId, progressKey) {
+  static async findByUserAndLevel(user_id, level_number) {
     const params = {
       TableName: TABLES.USER_PROGRESS,
       Key: {
-        userId,
-        progressKey
+        user_id,
+        level_number
       }
     };
 
@@ -65,12 +65,12 @@ class UserProgress {
     }
   }
 
-  static async updateProgress(userId, progressKey, updateData) {
+  static async updateProgress(user_id, level_number, updateData) {
     const updateExpression = [];
     const expressionAttributeValues = {};
     
     Object.keys(updateData).forEach(key => {
-      if (key !== 'userId' && key !== 'progressKey') {
+      if (key !== 'user_id' && key !== 'level_number') {
         updateExpression.push(`${key} = :${key}`);
         expressionAttributeValues[`:${key}`] = updateData[key];
       }
@@ -82,7 +82,7 @@ class UserProgress {
 
     const params = {
       TableName: TABLES.USER_PROGRESS,
-      Key: { userId, progressKey },
+      Key: { user_id, level_number },
       UpdateExpression: `SET ${updateExpression.join(', ')}`,
       ExpressionAttributeValues: expressionAttributeValues
     };
@@ -94,10 +94,10 @@ class UserProgress {
     }
   }
 
-  static async deleteProgress(userId, progressKey) {
+  static async deleteProgress(user_id, level_number) {
     const params = {
       TableName: TABLES.USER_PROGRESS,
-      Key: { userId, progressKey }
+      Key: { user_id, level_number }
     };
 
     try {

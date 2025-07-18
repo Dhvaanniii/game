@@ -3,10 +3,10 @@ const { v4: uuidv4 } = require('uuid');
 
 class Level {
   static async create(levelData) {
-    const levelId = `${levelData.category.toUpperCase()}_L${levelData.levelNumber}`;
+    const category_level_id = `${levelData.category.toUpperCase()}_L${levelData.levelNumber}`;
     
     const level = {
-      levelId, // Partition key
+      category_level_id, // Partition key
       category: levelData.category,
       subpart: levelData.subpart || 'none',
       levelNumber: levelData.levelNumber,
@@ -26,7 +26,7 @@ class Level {
     const params = {
       TableName: TABLES.LEVELS,
       Item: level,
-      ConditionExpression: 'attribute_not_exists(levelId)'
+      ConditionExpression: 'attribute_not_exists(category_level_id)'
     };
 
     try {
@@ -54,10 +54,10 @@ class Level {
     }
   }
 
-  static async findById(levelId) {
+  static async findById(category_level_id) {
     const params = {
       TableName: TABLES.LEVELS,
-      Key: { levelId }
+      Key: { category_level_id }
     };
 
     try {
@@ -91,12 +91,12 @@ class Level {
     return createdLevels;
   }
 
-  static async updateLevel(levelId, updateData) {
+  static async updateLevel(category_level_id, updateData) {
     const updateExpression = [];
     const expressionAttributeValues = {};
     
     Object.keys(updateData).forEach(key => {
-      if (key !== 'levelId') {
+      if (key !== 'category_level_id') {
         updateExpression.push(`${key} = :${key}`);
         expressionAttributeValues[`:${key}`] = updateData[key];
       }
@@ -104,7 +104,7 @@ class Level {
 
     const params = {
       TableName: TABLES.LEVELS,
-      Key: { levelId },
+      Key: { category_level_id },
       UpdateExpression: `SET ${updateExpression.join(', ')}`,
       ExpressionAttributeValues: expressionAttributeValues
     };
@@ -116,10 +116,10 @@ class Level {
     }
   }
 
-  static async deleteLevel(levelId) {
+  static async deleteLevel(category_level_id) {
     const params = {
       TableName: TABLES.LEVELS,
-      Key: { levelId }
+      Key: { category_level_id }
     };
 
     try {
@@ -129,10 +129,10 @@ class Level {
     }
   }
 
-  static async markAsPlayed(levelId) {
+  static async markAsPlayed(category_level_id) {
     const params = {
       TableName: TABLES.LEVELS,
-      Key: { levelId },
+      Key: { category_level_id },
       UpdateExpression: 'SET hasBeenPlayed = :played',
       ExpressionAttributeValues: {
         ':played': true
