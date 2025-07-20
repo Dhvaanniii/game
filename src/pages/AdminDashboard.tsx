@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
@@ -12,11 +12,14 @@ const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('dashboard');
 
-  // Redirect if not admin
-  if (!user || user.userType !== 'admin') {
-    navigate('/home');
-    return null;
-  }
+  useEffect(() => {
+    if (user && user.userType?.trim() !== 'admin') {
+      navigate('/home');
+    }
+    if (!user) {
+      navigate('/');
+    }
+  }, [user, navigate]);
 
   const tabs = [
     { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },

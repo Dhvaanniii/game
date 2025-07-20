@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { User, Lock, LogIn } from 'lucide-react';
@@ -19,7 +19,8 @@ const LoginPage: React.FC = () => {
     try {
       const result = await login(username, password);
       if (result.success) {
-        if (result.userType === 'admin') {
+        const userType = result.userType?.trim();
+        if (userType === 'admin') {
           navigate('/admin');
         } else {
           navigate('/home');

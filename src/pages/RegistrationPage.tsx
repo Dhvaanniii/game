@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { getCountries, getStates, getCities } from '../data/locationData';
@@ -28,53 +28,16 @@ const RegistrationPage: React.FC = () => {
   const { register } = useAuth();
   const navigate = useNavigate();
 
-  // Enhanced email validation
+  // Standard email validation
   const validateEmail = (email: string): { isValid: boolean; message: string } => {
     if (!email) {
       return { isValid: false, message: 'Email is required' };
     }
-
-    // Check if email has exactly 2 characters before @
-    const beforeAt = email.split('@')[0];
-    if (!beforeAt || beforeAt.length !== 2) {
-      return { 
-        isValid: false, 
-        message: 'Email must contain exactly 2 characters before @ (e.g., ab@gmail.com)' 
-      };
-    }
-
-    // Check if the 2 characters are alphanumeric
-    const alphanumericRegex = /^[a-zA-Z0-9]{2}$/;
-    if (!alphanumericRegex.test(beforeAt)) {
-      return { 
-        isValid: false, 
-        message: 'The 2 characters before @ must be letters or numbers only' 
-      };
-    }
-
-    // Check overall email format
-    const emailRegex = /^[a-zA-Z0-9]{2}@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    // Standard email regex
+    const emailRegex = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
     if (!emailRegex.test(email)) {
-      return { 
-        isValid: false, 
-        message: 'Please enter a valid email format (e.g., ab@gmail.com)' 
-      };
+      return { isValid: false, message: 'Please enter a valid email address' };
     }
-
-    // Check for common email providers (optional validation)
-    const domain = email.split('@')[1];
-    const commonDomains = [
-      'gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 
-      'aol.com', 'icloud.com', 'protonmail.com', 'mail.com'
-    ];
-    
-    if (!commonDomains.includes(domain.toLowerCase())) {
-      return { 
-        isValid: true, // Still valid, just a warning
-        message: 'Please use a common email provider (gmail.com, yahoo.com, etc.)' 
-      };
-    }
-
     return { isValid: true, message: 'Email format is correct' };
   };
 
@@ -316,7 +279,7 @@ const RegistrationPage: React.FC = () => {
                   className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
                     emailError ? 'border-red-500' : 'border-gray-300'
                   }`}
-                  placeholder="ab@gmail.com (exactly 2 chars before @)"
+                  placeholder="your@email.com"
                   required
                 />
                 {formData.email && !emailError && (
@@ -339,7 +302,7 @@ const RegistrationPage: React.FC = () => {
                 </p>
               )}
               <p className="text-xs text-gray-500 mt-1">
-                Must have exactly 2 characters before @ (e.g., ab@gmail.com, 12@yahoo.com)
+                Please enter a valid email address (e.g., abc@gmail.com, user123@melogic.com)
               </p>
             </div>
 

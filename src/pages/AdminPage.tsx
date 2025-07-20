@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
@@ -10,11 +10,14 @@ const AdminPage: React.FC = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('users');
 
-  // Redirect if not admin
-  if (!user || !user.isAdmin) {
-    navigate('/home');
-    return null;
-  }
+  useEffect(() => {
+    if (user && user.userType?.trim() !== 'admin') {
+      navigate('/home');
+    }
+    if (!user) {
+      navigate('/');
+    }
+  }, [user, navigate]);
 
   const mockUsers = [
     { id: 1, username: 'john_doe', realname: 'John Doe', email: 'john@example.com', school: 'ABC School', coins: 150 },

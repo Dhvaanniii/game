@@ -68,7 +68,7 @@ router.post('/login', async (req, res) => {
       success: true,
       user: userWithoutPassword,
       token,
-      userType: user.userType || 'user'
+      userType: (user.userType || 'user').trim()
     });
   } catch (error) {
     console.error('Login error:', error);

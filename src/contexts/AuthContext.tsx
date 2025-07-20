@@ -1,6 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import { apiService } from '../services/api';
-
 import { User } from '../types/user';
 
 interface AuthContextType {
@@ -51,7 +50,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const response = await apiService.login(username, password);
       if (response.success) {
         setUser(response.user);
-        return { success: true, userType: response.userType };
+        // Always trim userType before returning
+        return { success: true, userType: response.userType?.trim() };
       }
       return { success: false };
     } catch (error) {
