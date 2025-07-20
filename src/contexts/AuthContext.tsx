@@ -1,6 +1,6 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { apiService } from '../services/api';
-import { User } from '../types/user';
+import type { User } from '../types/user';
 
 interface AuthContextType {
   user: User | null;
@@ -19,9 +19,13 @@ export const useAuth = () => {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-};
+}
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+interface AuthProviderProps {
+  children: ReactNode;
+}
+
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Load user from localStorage instantly
   const [user, setUser] = useState<User | null>(() => {
     const storedUser = localStorage.getItem('user');

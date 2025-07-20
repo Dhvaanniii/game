@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { getCountries, getStates, getCities } from '../data/locationData';
+import { getCountries, getStates, getCities, hasStates, hasCities } from '../data/locationData';
 import { User, Mail, Lock, Globe, School, BookOpen, AlertCircle, CheckCircle } from 'lucide-react';
 
 const RegistrationPage: React.FC = () => {
@@ -25,6 +25,8 @@ const RegistrationPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [availableStates, setAvailableStates] = useState<string[]>([]);
   const [availableCities, setAvailableCities] = useState<string[]>([]);
+  const [isStateRequired, setIsStateRequired] = useState(true);
+  const [isCityRequired, setIsCityRequired] = useState(true);
   const { register } = useAuth();
   const navigate = useNavigate();
 
@@ -105,8 +107,13 @@ const RegistrationPage: React.FC = () => {
     // Handle location dependencies
     if (name === 'country') {
       const states = getStates(value);
+      const countryHasStates = hasStates(value);
+      
       setAvailableStates(states);
       setAvailableCities([]);
+      setIsStateRequired(countryHasStates);
+      setIsCityRequired(!countryHasStates); // If no states, city is required directly
+      
       setFormData(prev => ({
         ...prev,
         [name]: value,
@@ -118,7 +125,11 @@ const RegistrationPage: React.FC = () => {
     
     if (name === 'state') {
       const cities = getCities(formData.country, value);
+      const stateHasCities = hasCities(formData.country, value);
+      
       setAvailableCities(cities);
+      setIsCityRequired(stateHasCities);
+      
       setFormData(prev => ({
         ...prev,
         [name]: value,
@@ -170,8 +181,19 @@ const RegistrationPage: React.FC = () => {
       return;
     }
     
-    // Check if all required fields are filled
-    const requiredFields = ['username', 'password', 'realname', 'email', 'language', 'school', 'standard', 'board', 'country', 'state', 'city'];
+    // Check if all required fields are filled with smart validation
+    const requiredFields = ['username', 'password', 'realname', 'email', 'language', 'school', 'standard', 'board', 'country'];
+    
+    // Add state to required fields only if country has states
+    if (isStateRequired && formData.country) {
+      requiredFields.push('state');
+    }
+    
+    // Add city to required fields only if it's required
+    if (isCityRequired) {
+      requiredFields.push('city');
+    }
+    
     const missingFields = requiredFields.filter(field => !formData[field as keyof typeof formData]);
     
     if (missingFields.length > 0) {
@@ -496,45 +518,83 @@ const RegistrationPage: React.FC = () => {
               </select>
             </div>
 
-            <div>
-              <label htmlFor="state" className="block text-sm font-medium text-gray-700 mb-1">
-                State*
-              </label>
-              <select
-                id="state"
-                name="state"
-                value={formData.state}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                disabled={!formData.country}
-                required
-              >
-                <option value="">Select State</option>
-                {availableStates.map(state => (
-                  <option key={state} value={state}>{state}</option>
-                ))}
-              </select>
-            </div>
+            {isStateRequired ? (
+              <div>
+                <label htmlFor="state" className="block text-sm font-medium text-gray-700 mb-1">
+                  State*
+                </label>
+                <select
+                  id="state"
+                  name="state"
+                  value={formData.state}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  disabled={!formData.country}
+                  required
+                >
+                  <option value="">Select State</option>
+                  {availableStates.map(state => (
+                    <option key={state} value={state}>{state}</option>
+                  ))}
+                </select>
+              </div>
+            ) : (
+              <div>
+                <label htmlFor="state" className="block text-sm font-medium text-gray-500 mb-1">
+                  State (Not Required)
+                </label>
+                <select
+                  id="state"
+                  name="state"
+                  value={formData.state}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-500 cursor-not-allowed"
+                  disabled={true}
+                >
+                  <option value="">No states available for this country</option>
+                </select>
+                <p className="text-xs text-gray-500 mt-1">This country has no states/provinces</p>
+              </div>
+            )}
 
-            <div>
-              <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
-                City*
-              </label>
-              <select
-                id="city"
-                name="city"
-                value={formData.city}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                disabled={!formData.state}
-                required
-              >
-                <option value="">Select City</option>
-                {availableCities.map(city => (
-                  <option key={city} value={city}>{city}</option>
-                ))}
-              </select>
-            </div>
+            {isCityRequired ? (
+              <div>
+                <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
+                  City*
+                </label>
+                <select
+                  id="city"
+                  name="city"
+                  value={formData.city}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  disabled={!formData.state && isStateRequired}
+                  required
+                >
+                  <option value="">Select City</option>
+                  {availableCities.map(city => (
+                    <option key={city} value={city}>{city}</option>
+                  ))}
+                </select>
+              </div>
+            ) : (
+              <div>
+                <label htmlFor="city" className="block text-sm font-medium text-gray-500 mb-1">
+                  City (Not Required)
+                </label>
+                <select
+                  id="city"
+                  name="city"
+                  value={formData.city}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-500 cursor-not-allowed"
+                  disabled={true}
+                >
+                  <option value="">No cities available for this selection</option>
+                </select>
+                <p className="text-xs text-gray-500 mt-1">No cities available for the selected state</p>
+              </div>
+            )}
           </div>
 
           {error && (

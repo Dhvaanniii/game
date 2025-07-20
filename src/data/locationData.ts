@@ -1,3 +1,5 @@
+import data from '../data/countries.json';
+
 export interface LocationData {
   countries: Country[];
 }
@@ -9,79 +11,11 @@ export interface Country {
 
 export interface State {
   name: string;
-  cities: string[];
+  cities: { name: string }[];
 }
 
 export const locationData: LocationData = {
-  countries: [
-    {
-      name: "India",
-      states: [
-        {
-          name: "Gujarat",
-          cities: ["Ahmedabad", "Surat", "Vadodara", "Rajkot", "Bhavnagar", "Jamnagar", "Gandhinagar", "Anand"]
-        },
-        {
-          name: "Maharashtra",
-          cities: ["Mumbai", "Pune", "Nagpur", "Nashik", "Aurangabad", "Solapur", "Kolhapur", "Sangli"]
-        },
-        {
-          name: "Karnataka",
-          cities: ["Bangalore", "Mysore", "Hubli", "Mangalore", "Belgaum", "Gulbarga", "Davangere", "Shimoga"]
-        },
-        {
-          name: "Tamil Nadu",
-          cities: ["Chennai", "Coimbatore", "Madurai", "Tiruchirappalli", "Salem", "Tirunelveli", "Erode", "Vellore"]
-        },
-        {
-          name: "Delhi",
-          cities: ["New Delhi", "Central Delhi", "North Delhi", "South Delhi", "East Delhi", "West Delhi"]
-        },
-        {
-          name: "Rajasthan",
-          cities: ["Jaipur", "Jodhpur", "Udaipur", "Kota", "Ajmer", "Bikaner", "Alwar", "Bharatpur"]
-        },
-        {
-          name: "Uttar Pradesh",
-          cities: ["Lucknow", "Kanpur", "Agra", "Varanasi", "Meerut", "Allahabad", "Bareilly", "Ghaziabad"]
-        },
-        {
-          name: "West Bengal",
-          cities: ["Kolkata", "Howrah", "Durgapur", "Asansol", "Siliguri", "Malda", "Bardhaman", "Kharagpur"]
-        }
-      ]
-    },
-    {
-      name: "United States",
-      states: [
-        {
-          name: "California",
-          cities: ["Los Angeles", "San Francisco", "San Diego", "Sacramento", "San Jose", "Fresno", "Oakland", "Long Beach"]
-        },
-        {
-          name: "New York",
-          cities: ["New York City", "Buffalo", "Rochester", "Yonkers", "Syracuse", "Albany", "New Rochelle", "Mount Vernon"]
-        },
-        {
-          name: "Texas",
-          cities: ["Houston", "San Antonio", "Dallas", "Austin", "Fort Worth", "El Paso", "Arlington", "Corpus Christi"]
-        }
-      ]
-    },
-    {
-      name: "United Kingdom",
-      states: [
-        {
-          name: "England",
-          cities: ["London", "Birmingham", "Manchester", "Liverpool", "Leeds", "Sheffield", "Bristol", "Newcastle"]
-        },
-        {
-          name: "Scotland",
-          cities: ["Edinburgh", "Glasgow", "Aberdeen", "Dundee", "Stirling", "Perth", "Inverness", "Paisley"]
-        }
-      ]
-    }
-  ]
+  countries: data as Country[]
 };
 
 export const getCountries = (): string[] => {
@@ -95,8 +29,45 @@ export const getStates = (countryName: string): string[] => {
 
 export const getCities = (countryName: string, stateName: string): string[] => {
   const country = locationData.countries.find(c => c.name === countryName);
-  if (!country) return [];
+  const state = country?.states.find(s => s.name === stateName);
+  return state ? state.cities.map(c => c.name) : [];
+};
+
+// New functions for validation
+export const hasStates = (countryName: string): boolean => {
+  const country = locationData.countries.find(c => c.name === countryName);
+  return country ? country.states.length > 0 : false;
+};
+
+export const hasCities = (countryName: string, stateName: string): boolean => {
+  const country = locationData.countries.find(c => c.name === countryName);
+  const state = country?.states.find(s => s.name === stateName);
+  return state ? state.cities.length > 0 : false;
+};
+
+// Function to get cities directly from country (for countries without states)
+export const getCitiesFromCountry = (countryName: string): string[] => {
+  const country = locationData.countries.find(c => c.name === countryName);
+  if (!country || country.states.length === 0) {
+    return [];
+  }
   
-  const state = country.states.find(s => s.name === stateName);
-  return state ? state.cities : [];
+  // If country has states but user wants to bypass, return empty
+  // This function is mainly for countries that naturally have no states
+  return [];
+};
+
+// Helper function to check if state/city fields are required
+export const isStateRequired = (countryName: string): boolean => {
+  return hasStates(countryName);
+};
+
+export const isCityRequired = (countryName: string, stateName: string): boolean => {
+  // If country has no states, city is required directly from country
+  if (!hasStates(countryName)) {
+    return true;
+  }
+  
+  // If state has cities, city is required
+  return hasCities(countryName, stateName);
 };

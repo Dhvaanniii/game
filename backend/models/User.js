@@ -20,7 +20,7 @@ class User {
       country: userData.country,
       state: userData.state,
       city: userData.city,
-      coins: 100, // Starting coins
+      coins: 0, // Starting coins
       userType: 'user',
       createdAt: new Date().toISOString(),
       lastLogin: null

@@ -24,7 +24,7 @@ router.post('/register', async (req, res) => {
     // Create new user
     const user = await User.create(req.body);
     
-    // Generate JWT token
+    // Generate JWT token (sessionId logic removed)
     const token = jwt.sign({ userId: user.userId }, JWT_SECRET, { expiresIn: '7d' });
 
     res.status(201).json({
@@ -58,7 +58,7 @@ router.post('/login', async (req, res) => {
     // Update last login
     await User.updateLastLogin(user.userId);
 
-    // Generate JWT token
+    // Generate JWT token (sessionId logic removed)
     const token = jwt.sign({ userId: user.userId }, JWT_SECRET, { expiresIn: '7d' });
 
     // Remove password from response
@@ -124,9 +124,14 @@ function authenticateToken(req, res, next) {
     return res.status(401).json({ error: 'Access token required' });
   }
 
-  jwt.verify(token, JWT_SECRET, (err, decoded) => {
+  jwt.verify(token, JWT_SECRET, async (err, decoded) => {
     if (err) {
       return res.status(403).json({ error: 'Invalid token' });
+    }
+    // sessionId check removed: single-session logic no longer used
+    const user = await User.findById(decoded.userId);
+    if (!user) {
+      return res.status(401).json({ error: 'Session expired or logged in elsewhere' });
     }
     req.userId = decoded.userId;
     next();
