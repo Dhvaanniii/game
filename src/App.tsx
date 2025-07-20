@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { GameProvider } from './contexts/GameContext';
 import { AuthProvider } from './contexts/AuthContext';
 import IndexPage from './pages/IndexPage';
@@ -13,6 +13,7 @@ import FunThinkerMediumPage from './pages/FunThinkerMediumPage';
 import FunThinkerHardPage from './pages/FunThinkerHardPage';
 import ProfilePage from './pages/ProfilePage';
 import AdminDashboard from './pages/AdminDashboard';
+import ProtectedRoute from './components/ProtectedRoute';
 import './App.css';
 
 function App() {
@@ -25,15 +26,17 @@ function App() {
               <Route path="/" element={<IndexPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegistrationPage />} />
-              <Route path="/home" element={<HomePage />} />
-              <Route path="/tangles" element={<TanglePage />} />
-              <Route path="/tangles/play/:level" element={<TanglePlaygroundPage />} />
-              <Route path="/funthinkers" element={<FunThinkerPage />} />
-              <Route path="/funthinkers/basic" element={<FunThinkerBasicPage />} />
-              <Route path="/funthinkers/medium" element={<FunThinkerMediumPage />} />
-              <Route path="/funthinkers/hard" element={<FunThinkerHardPage />} />
-              <Route path="/profile" element={<ProfilePage />} />
-              <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="*" element={<Navigate to="/" replace />} /> {/* Catch-all route with redirect */}
+              {/* Protected routes */}
+              <Route path="/home" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
+              <Route path="/tangles" element={<ProtectedRoute><TanglePage /></ProtectedRoute>} />
+              <Route path="/tangles/play/:level" element={<ProtectedRoute><TanglePlaygroundPage /></ProtectedRoute>} />
+              <Route path="/funthinkers" element={<ProtectedRoute><FunThinkerPage /></ProtectedRoute>} />
+              <Route path="/funthinkers/basic" element={<ProtectedRoute><FunThinkerBasicPage /></ProtectedRoute>} />
+              <Route path="/funthinkers/medium" element={<ProtectedRoute><FunThinkerMediumPage /></ProtectedRoute>} />
+              <Route path="/funthinkers/hard" element={<ProtectedRoute><FunThinkerHardPage /></ProtectedRoute>} />
+              <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+              <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
             </Routes>
           </div>
         </Router>
