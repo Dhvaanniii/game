@@ -22,10 +22,15 @@ export const useAuth = () => {
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  // Load user from localStorage instantly
+  const [user, setUser] = useState<User | null>(() => {
+    const storedUser = localStorage.getItem('user');
+    return storedUser ? JSON.parse(storedUser) : null;
+  });
+  // No loading state needed for instant UI
 
   useEffect(() => {
-    // Check for stored auth token and get current user
+    // Always validate token in the background
     const token = localStorage.getItem('authToken');
     if (token) {
       getCurrentUser();
@@ -37,11 +42,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const response = await apiService.getCurrentUser();
       if (response.success) {
         setUser(response.user);
+        localStorage.setItem('user', JSON.stringify(response.user));
+      } else if (response.error === 'Invalid token' || response.error === 'Access token required') {
+        setUser(null);
+        localStorage.removeItem('user');
+        localStorage.removeItem('authToken');
       }
+      // If other error, do nothing: keep user in UI
     } catch (error) {
-      console.error('Failed to get current user:', error);
-      // Clear invalid token
-      localStorage.removeItem('authToken');
+      // Network/server error: do NOT log out, keep user in UI
+      // Optionally, show a warning/toast to the user here
     }
   };
 
@@ -50,12 +60,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const response = await apiService.login(username, password);
       if (response.success) {
         setUser(response.user);
-        // Always trim userType before returning
+        localStorage.setItem('user', JSON.stringify(response.user));
         return { success: true, userType: response.userType?.trim() };
       }
       return { success: false };
     } catch (error) {
-      console.error('Login failed:', error);
       return { success: false };
     }
   };
@@ -65,11 +74,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const response = await apiService.register(userData);
       if (response.success) {
         setUser(response.user);
+        localStorage.setItem('user', JSON.stringify(response.user));
         return true;
       }
       return false;
     } catch (error) {
-      console.error('Registration failed:', error);
       return false;
     }
   };
@@ -77,16 +86,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = () => {
     apiService.logout();
     setUser(null);
+    localStorage.removeItem('user');
+    localStorage.removeItem('authToken');
   };
 
   const updateProfile = (userData: Partial<User>) => {
     if (!user) return;
-    
     try {
       apiService.updateProfile(userData);
-      setUser({ ...user, ...userData });
+      const updatedUser = { ...user, ...userData };
+      setUser(updatedUser);
+      localStorage.setItem('user', JSON.stringify(updatedUser));
     } catch (error) {
-      console.error('Failed to update profile:', error);
+      // handle error
     }
   };
 

@@ -7,9 +7,7 @@ import { Brain, Triangle, Play, Award, Clock } from 'lucide-react';
 const HomePage: React.FC = () => {
   const { user } = useAuth();
 
-  if (!user) {
-    return null;
-  }
+  if (!user) return null;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
