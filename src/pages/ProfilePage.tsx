@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import Header from '../components/Header';
+import { getCountries, getStates, getCities, hasStates, hasCities, isStateRequired, isCityRequired } from '../data/locationData';
 import { User, Mail, Globe, School, BookOpen, MapPin, Edit2, Save, X } from 'lucide-react';
 
 const ProfilePage: React.FC = () => {
@@ -17,11 +18,51 @@ const ProfilePage: React.FC = () => {
     state: user?.state || '',
     city: user?.city || '',
   });
+  const [availableStates, setAvailableStates] = useState<string[]>([]);
+  const [availableCities, setAvailableCities] = useState<string[]>([]);
+  const [isStateRequired, setIsStateRequired] = useState(true);
+  const [isCityRequired, setIsCityRequired] = useState(true);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    
+    // Handle location dependencies
+    if (name === 'country') {
+      const states = getStates(value);
+      const countryHasStates = hasStates(value);
+      
+      setAvailableStates(states);
+      setAvailableCities([]);
+      setIsStateRequired(countryHasStates);
+      setIsCityRequired(!countryHasStates); // If no states, city is required directly
+      
+      setFormData(prev => ({
+        ...prev,
+        [name]: value,
+        state: '',
+        city: ''
+      }));
+      return;
+    }
+    
+    if (name === 'state') {
+      const cities = getCities(formData.country, value);
+      const stateHasCities = hasCities(formData.country, value);
+      
+      setAvailableCities(cities);
+      setIsCityRequired(stateHasCities);
+      
+      setFormData(prev => ({
+        ...prev,
+        [name]: value,
+        city: ''
+      }));
+      return;
+    }
+    
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [name]: value,
     });
   };
 
@@ -43,6 +84,30 @@ const ProfilePage: React.FC = () => {
       city: user?.city || '',
     });
     setIsEditing(false);
+  };
+
+  // Initialize location data when editing starts
+  const handleEditStart = () => {
+    setIsEditing(true);
+    
+    // Initialize states and cities based on current user data
+    if (user?.country) {
+      const states = getStates(user.country);
+      const countryHasStates = hasStates(user.country);
+      
+      setAvailableStates(states);
+      setIsStateRequired(countryHasStates);
+      
+      if (user?.state && countryHasStates) {
+        const cities = getCities(user.country, user.state);
+        const stateHasCities = hasCities(user.country, user.state);
+        
+        setAvailableCities(cities);
+        setIsCityRequired(stateHasCities);
+      } else {
+        setIsCityRequired(!countryHasStates);
+      }
+    }
   };
 
   if (!user) return null;
@@ -68,7 +133,7 @@ const ProfilePage: React.FC = () => {
               <div className="flex space-x-2">
                 {!isEditing ? (
                   <button
-                    onClick={() => setIsEditing(true)}
+                    onClick={handleEditStart}
                     className="flex items-center space-x-2 bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg transition-colors"
                   >
                     <Edit2 className="w-4 h-4" />
@@ -232,13 +297,17 @@ const ProfilePage: React.FC = () => {
                   Country
                 </label>
                 {isEditing ? (
-                  <input
-                    type="text"
+                  <select
                     name="country"
                     value={formData.country}
                     onChange={handleChange}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
+                  >
+                    <option value="">Select Country</option>
+                    {getCountries().map(country => (
+                      <option key={country} value={country}>{country}</option>
+                    ))}
+                  </select>
                 ) : (
                   <p className="text-gray-800 font-medium">{user.country}</p>
                 )}
@@ -250,13 +319,18 @@ const ProfilePage: React.FC = () => {
                   State
                 </label>
                 {isEditing ? (
-                  <input
-                    type="text"
+                  <select
                     name="state"
                     value={formData.state}
                     onChange={handleChange}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
+                    disabled={!formData.country || !isStateRequired}
+                  >
+                    <option value="">{isStateRequired ? "Select State" : "No states available"}</option>
+                    {availableStates.map(state => (
+                      <option key={state} value={state}>{state}</option>
+                    ))}
+                  </select>
                 ) : (
                   <p className="text-gray-800 font-medium">{user.state}</p>
                 )}
@@ -268,13 +342,18 @@ const ProfilePage: React.FC = () => {
                   City
                 </label>
                 {isEditing ? (
-                  <input
-                    type="text"
+                  <select
                     name="city"
                     value={formData.city}
                     onChange={handleChange}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
+                    disabled={!formData.state && isStateRequired}
+                  >
+                    <option value="">{isCityRequired ? "Select City" : "No cities available"}</option>
+                    {availableCities.map(city => (
+                      <option key={city} value={city}>{city}</option>
+                    ))}
+                  </select>
                 ) : (
                   <p className="text-gray-800 font-medium">{user.city}</p>
                 )}
