@@ -10,7 +10,7 @@ export interface GameBlock {
 export interface Level {
   id: string;
   number: number;
-  category: 'tangle' | 'funthinker-basic' | 'funthinker-medium' | 'funthinker-hard';
+  category: 'tengram' | 'funthinker-basic' | 'funthinker-medium' | 'funthinker-hard';
   outlineUrl: string;
   unlockDate: Date;
   lockDate: Date;

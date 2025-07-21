@@ -3,6 +3,31 @@ const User = require('../models/User');
 const Level = require('../models/Level');
 const UserProgress = require('../models/UserProgress');
 const router = express.Router();
+const fs = require('fs');
+const path = require('path');
+const SETTINGS_PATH = path.join(__dirname, '../config/settings.json');
+
+// Helper to read settings
+function readSettings() {
+  if (!fs.existsSync(SETTINGS_PATH)) {
+    return {
+      registration: true,
+      maintenance: false,
+      emailNotifications: true,
+      timerDuration: 180,
+      maxAttempts: 3,
+      levelLockDuration: 15,
+      fixedBlocks: true,
+      weeklyReports: true,
+      pdfUpload: true
+    };
+  }
+  return JSON.parse(fs.readFileSync(SETTINGS_PATH, 'utf-8'));
+}
+// Helper to write settings
+function writeSettings(settings) {
+  fs.writeFileSync(SETTINGS_PATH, JSON.stringify(settings, null, 2));
+}
 
 // Get all users (admin only)
 router.get('/users', async (req, res) => {
@@ -104,6 +129,55 @@ router.delete('/users/:userId', async (req, res) => {
   } catch (error) {
     console.error('Delete user error:', error);
     res.status(500).json({ error: 'Failed to delete user' });
+  }
+});
+
+// GET system settings
+router.get('/system-settings', (req, res) => {
+  try {
+    const settings = readSettings();
+    res.json({ success: true, settings });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to load system settings' });
+  }
+});
+
+// PUT update system setting
+router.put('/system-settings', (req, res) => {
+  try {
+    const { key, value } = req.body;
+    const allowedKeys = [
+      'registration',
+      'maintenance',
+      'emailNotifications',
+      'timerDuration',
+      'maxAttempts',
+      'levelLockDuration',
+      'fixedBlocks',
+      'weeklyReports',
+      'pdfUpload'
+    ];
+    if (!allowedKeys.includes(key)) {
+      return res.status(400).json({ error: 'Invalid setting key' });
+    }
+    const settings = readSettings();
+    settings[key] = value;
+    writeSettings(settings);
+    console.log(`[SystemSettings] Updated ${key} to`, value);
+    res.json({ success: true, settings });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update system setting' });
+  }
+});
+
+// POST manual weekly report send (dummy)
+router.post('/send-weekly-report', (req, res) => {
+  try {
+    // TODO: Implement real report generation and email
+    console.log('[WeeklyReport] Manual report send triggered by admin');
+    res.json({ success: true, message: 'Weekly report sent (dummy implementation)' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to send weekly report' });
   }
 });
 

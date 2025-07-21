@@ -55,8 +55,8 @@ const WeeklyReportManager: React.FC = () => {
           weekStart: selectedWeek,
           weekEnd: new Date(new Date(selectedWeek).getTime() + 6 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
           attempts: [
-            { category: 'Tangles', level: 'Level 1', attempt: 2, points: 200, date: selectedWeek },
-            { category: 'Tangles', level: 'Level 2', attempt: 1, points: 300, date: selectedWeek },
+            { category: 'Tengrams', level: 'Level 1', attempt: 2, points: 200, date: selectedWeek },
+            { category: 'Tengrams', level: 'Level 2', attempt: 1, points: 300, date: selectedWeek },
             { category: 'Funthinker Basic', level: 'Level 1', attempt: 3, points: 100, date: selectedWeek },
           ],
           totalPoints: 600,
@@ -68,7 +68,7 @@ const WeeklyReportManager: React.FC = () => {
           weekStart: selectedWeek,
           weekEnd: new Date(new Date(selectedWeek).getTime() + 6 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
           attempts: [
-            { category: 'Tangles', level: 'Level 1', attempt: 1, points: 300, date: selectedWeek },
+            { category: 'Tengrams', level: 'Level 1', attempt: 1, points: 300, date: selectedWeek },
             { category: 'Funthinker Medium', level: 'Level 1', attempt: 2, points: 200, date: selectedWeek },
           ],
           totalPoints: 500,

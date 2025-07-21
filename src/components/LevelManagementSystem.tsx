@@ -4,7 +4,7 @@ import { Clock, Lock, Unlock, Calendar, AlertTriangle, CheckCircle } from 'lucid
 interface ManagedLevel {
   id: string;
   number: number;
-  category: 'tangle' | 'funthinker-basic' | 'funthinker-medium' | 'funthinker-hard';
+  category: 'tengram' | 'funthinker-basic' | 'funthinker-medium' | 'funthinker-hard';
   unlockDate: Date;
   lockDate: Date;
   isLocked: boolean;
@@ -26,7 +26,7 @@ const LevelManagementSystem: React.FC = () => {
   }, []);
 
   const loadLevels = () => {
-    const categories = ['tangle', 'funthinker-basic', 'funthinker-medium', 'funthinker-hard'];
+    const categories = ['tengram', 'funthinker-basic', 'funthinker-medium', 'funthinker-hard'];
     const allLevels: ManagedLevel[] = [];
 
     categories.forEach(category => {
@@ -111,7 +111,7 @@ const LevelManagementSystem: React.FC = () => {
 
   const getCategoryDisplayName = (category: string) => {
     switch (category) {
-      case 'tangle': return 'Tangles';
+      case 'tengram': return 'Tengrams';
       case 'funthinker-basic': return 'Funthinker Basic';
       case 'funthinker-medium': return 'Funthinker Medium';
       case 'funthinker-hard': return 'Funthinker Hard';
@@ -165,7 +165,7 @@ const LevelManagementSystem: React.FC = () => {
             className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           >
             <option value="all">All Categories</option>
-            <option value="tangle">Tangles</option>
+            <option value="tengram">Tengrams</option>
             <option value="funthinker-basic">Funthinker Basic</option>
             <option value="funthinker-medium">Funthinker Medium</option>
             <option value="funthinker-hard">Funthinker Hard</option>

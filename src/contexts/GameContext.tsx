@@ -42,8 +42,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } else {
       // Initialize with first levels unlocked
       const initialProgress: Record<string, GameProgress> = {
-        'tangle-1': {
-          levelId: 'tangle-1',
+        'tengram-1': {
+          levelId: 'tengram-1',
           stars: 0,
           attempts: 0,
           completed: false,
@@ -122,7 +122,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const nextLevelId = `${category}-${currentLevelNum + 1}`;
     
     // Check if next level exists and isn't already unlocked
-    const maxLevels = category === 'tangle' ? 200 : 20; // Assuming 20 levels per funthinker category
+    const maxLevels = category === 'tengram' ? 200 : 20; // Assuming 20 levels per funthinker category
     if (currentLevelNum < maxLevels && !progress[nextLevelId]) {
       const unlockTime = new Date();
       unlockTime.setHours(unlockTime.getHours() + 12); // Unlock after 12 hours

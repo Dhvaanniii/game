@@ -78,8 +78,8 @@ const HomePage: React.FC = () => {
             </div>
           </Link>
 
-          {/* Tangles Category */}
-          <Link to="/tangles" className="group">
+          {/* tengrams Category */}
+          <Link to="/tengrams" className="group">
             <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden transform group-hover:scale-105">
               <div className="bg-gradient-to-r from-orange-500 to-red-600 p-6">
                 <div className="flex items-center justify-between">
@@ -88,7 +88,7 @@ const HomePage: React.FC = () => {
                       <Triangle className="w-8 h-8 text-orange-600" />
                     </div>
                     <div>
-                      <h2 className="text-2xl font-bold text-white">Tangles</h2>
+                      <h2 className="text-2xl font-bold text-white">Tengrams</h2>
                       <p className="text-orange-100">Geometric Puzzles</p>
                     </div>
                   </div>
@@ -156,7 +156,7 @@ const HomePage: React.FC = () => {
                 <Triangle className="w-8 h-8 text-orange-600" />
               </div>
               <div className="text-2xl font-bold text-gray-800">0</div>
-              <div className="text-sm text-gray-600">Tangles Solved</div>
+              <div className="text-sm text-gray-600">Tengrams Solved</div>
             </div>
           </div>
         </div>

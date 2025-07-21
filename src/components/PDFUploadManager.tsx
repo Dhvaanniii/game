@@ -1,17 +1,17 @@
 import React, { useState, useRef } from 'react';
-import { Upload, FileText, Trash2, Eye, Download, AlertCircle, CheckCircle } from 'lucide-react';
+import { Upload, FileText, Trash2, Eye, AlertCircle, CheckCircle } from 'lucide-react';
 
 interface PDFLevel {
   levelNumber: number;
   pageNumber: number;
-  category: 'tangle' | 'funthinker-basic' | 'funthinker-medium' | 'funthinker-hard';
+  category: 'tengram' | 'funthinker-basic' | 'funthinker-medium' | 'funthinker-hard';
   outlineUrl: string;
   unlockDate: Date;
   lockDate: Date;
 }
 
 interface PDFUploadManagerProps {
-  category: 'tangle' | 'funthinker-basic' | 'funthinker-medium' | 'funthinker-hard';
+  category: 'tengram' | 'funthinker-basic' | 'funthinker-medium' | 'funthinker-hard';
   onLevelsCreated?: (levels: PDFLevel[]) => void;
 }
 
@@ -113,7 +113,7 @@ const PDFUploadManager: React.FC<PDFUploadManagerProps> = ({ category, onLevelsC
 
   const getCategoryDisplayName = () => {
     switch (category) {
-      case 'tangle': return 'Tangles';
+      case 'tengram': return 'Tengrams';
       case 'funthinker-basic': return 'Funthinker Basic';
       case 'funthinker-medium': return 'Funthinker Medium';
       case 'funthinker-hard': return 'Funthinker Hard';

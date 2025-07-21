@@ -29,7 +29,7 @@ const AdminPage: React.FC = () => {
     { id: 1, title: 'Basic Math', category: 'Funthinker Basic', difficulty: 'Easy', attempts: 145 },
     { id: 2, title: 'Shape Sorting', category: 'Funthinker Basic', difficulty: 'Easy', attempts: 132 },
     { id: 3, title: 'Pattern Recognition', category: 'Funthinker Medium', difficulty: 'Medium', attempts: 89 },
-    { id: 4, title: 'Complex Tangram', category: 'Tangles', difficulty: 'Hard', attempts: 56 },
+    { id: 4, title: 'Complex Tangram', category: 'Tengrams', difficulty: 'Hard', attempts: 56 },
   ];
 
   const tabs = [

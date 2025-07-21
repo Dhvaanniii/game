@@ -19,7 +19,7 @@ const LevelImageManager: React.FC<LevelImageManagerProps> = ({ onImageUpdate }) 
 
   // Load existing images from localStorage
   useEffect(() => {
-    const stored = localStorage.getItem('tangleLevelImages');
+    const stored = localStorage.getItem('tengramLevelImages');
     if (stored) {
       const parsed = JSON.parse(stored);
       setLevelImages(parsed.map((img: any) => ({
@@ -31,7 +31,7 @@ const LevelImageManager: React.FC<LevelImageManagerProps> = ({ onImageUpdate }) 
 
   // Save images to localStorage
   const saveImages = (images: LevelImage[]) => {
-    localStorage.setItem('tangleLevelImages', JSON.stringify(images));
+    localStorage.setItem('tengramLevelImages', JSON.stringify(images));
     setLevelImages(images);
   };
 
@@ -93,7 +93,7 @@ const LevelImageManager: React.FC<LevelImageManagerProps> = ({ onImageUpdate }) 
     const url = URL.createObjectURL(dataBlob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = 'tangle-level-images.json';
+    link.download = 'tengram-level-images.json';
     link.click();
     URL.revokeObjectURL(url);
   };

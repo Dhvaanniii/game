@@ -3,6 +3,20 @@ const multer = require('multer');
 const Level = require('../models/Level');
 const UserProgress = require('../models/UserProgress');
 const router = express.Router();
+const { PDFDocument } = require('pdf-lib');
+const sharp = require('sharp');
+const { v4: uuidv4 } = require('uuid');
+const fs = require('fs');
+const path = require('path');
+const OUTLINES_DIR = path.join(__dirname, '../outlines/tengram');
+
+// Ensure outlines directory exists
+if (!fs.existsSync(OUTLINES_DIR)) {
+  fs.mkdirSync(OUTLINES_DIR, { recursive: true });
+}
+
+// Serve outlines as static files
+router.use('/static/outlines/tengram', express.static(OUTLINES_DIR));
 
 // Configure multer for file uploads
 const upload = multer({
@@ -48,7 +62,7 @@ router.get('/:category/:levelNumber', async (req, res) => {
   }
 });
 
-// Upload PDF and create levels
+// Upload PDF and create levels (Tengram)
 router.post('/upload/:category', upload.single('pdf'), async (req, res) => {
   try {
     const { category } = req.params;
@@ -58,40 +72,46 @@ router.post('/upload/:category', upload.single('pdf'), async (req, res) => {
       return res.status(400).json({ error: 'PDF file is required' });
     }
 
+    // Only process for tengram category
+    if (category !== 'tengram') {
+      return res.status(400).json({ error: 'Only tengram PDF upload is supported in this endpoint.' });
+    }
+
     // Get next level number for this category
     const nextLevelNumber = await Level.getNextLevelNumber(category);
 
-    // Simulate PDF processing (in real implementation, use pdf-parse)
-    const pageCount = Math.floor(Math.random() * 10) + 5; // Random 5-15 pages
+    // Read PDF and extract pages
+    const pdfBytes = fs.readFileSync(file.path);
+    const pdfDoc = await PDFDocument.load(pdfBytes);
+    const pageCount = pdfDoc.getPageCount();
     const levelsData = [];
 
-    for (let i = 1; i <= pageCount; i++) {
-      const levelNumber = nextLevelNumber + i - 1;
+    for (let i = 0; i < pageCount; i++) {
+      // Extract single page as new PDF
+      const newPdf = await PDFDocument.create();
+      const [copiedPage] = await newPdf.copyPages(pdfDoc, [i]);
+      newPdf.addPage(copiedPage);
+      const singlePagePdfBytes = await newPdf.save();
+
+      // Convert PDF page to PNG using sharp (requires poppler-utils or similar for real PDF to image)
+      // For demo, just save the PDF page as a file (in real use, convert to PNG/SVG)
+      const levelNumber = nextLevelNumber + i;
+      const outlinePath = path.join(OUTLINES_DIR, `level_${levelNumber}.pdf`);
+      fs.writeFileSync(outlinePath, singlePagePdfBytes);
+      // In real use, convert to PNG and set outlineUrl to /static/outlines/tengram/level_X.png
+      const outlineUrl = `/api/levels/static/outlines/tengram/level_${levelNumber}.pdf`;
+
       const unlockDate = new Date();
       unlockDate.setDate(unlockDate.getDate() + (levelNumber - 1));
       unlockDate.setHours(0, 0, 0, 0);
-
       const lockDate = new Date(unlockDate);
       lockDate.setDate(lockDate.getDate() + 15);
 
-      // Create mock outline URL (in real implementation, convert PDF page to image)
-      const outlineUrl = `data:image/svg+xml;base64,${Buffer.from(`
-        <svg width="400" height="300" xmlns="http://www.w3.org/2000/svg">
-          <rect width="400" height="300" fill="#f0f0f0" stroke="#333" stroke-width="2"/>
-          <text x="200" y="150" text-anchor="middle" font-size="16" fill="#333">
-            ${category.toUpperCase()} Level ${levelNumber}
-          </text>
-          <text x="200" y="180" text-anchor="middle" font-size="14" fill="#666">
-            Page ${i} from PDF
-          </text>
-        </svg>
-      `).toString('base64')}`;
-
       levelsData.push({
         category,
-        subpart: category.includes('funthinker') ? category.split('-')[1] : 'none',
+        subpart: 'none',
         levelNumber,
-        pageNumber: i,
+        pageNumber: i + 1,
         outlineUrl,
         unlockDate: unlockDate.toISOString(),
         lockDate: lockDate.toISOString(),

@@ -8,8 +8,8 @@ const FunThinkerHardPage: React.FC = () => {
   const navigate = useNavigate();
 
   const handleLevelClick = (level: number) => {
-    // For demo purposes, navigate to tangles playground
-    navigate(`/tangles/play/${level}`);
+    // For demo purposes, navigate to tengrams playground
+    navigate(`/tengrams/play/${level}`);
   };
 
   return (

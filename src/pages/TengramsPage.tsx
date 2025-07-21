@@ -4,11 +4,11 @@ import Header from '../components/Header';
 import LevelGrid from '../components/LevelGrid';
 import { Triangle, Award, Clock } from 'lucide-react';
 
-const TanglePage: React.FC = () => {
+const TengramsPage: React.FC = () => {
   const navigate = useNavigate();
 
   const handleLevelClick = (level: number) => {
-    navigate(`/tangles/play/${level}`);
+    navigate(`/tengrams/play/${level}`);
   };
 
   return (
@@ -20,7 +20,7 @@ const TanglePage: React.FC = () => {
           <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-orange-500 to-red-600 rounded-full mb-4">
             <Triangle className="w-10 h-10 text-white" />
           </div>
-          <h1 className="text-4xl font-bold text-gray-800 mb-2">Tangles</h1>
+          <h1 className="text-4xl font-bold text-gray-800 mb-2">Tengrams</h1>
           <p className="text-xl text-gray-600 mb-6">
             Solve geometric puzzles and earn stars based on your performance
           </p>
@@ -40,7 +40,6 @@ const TanglePage: React.FC = () => {
             </div>
           </div>
         </div>
-
         <div className="bg-white rounded-2xl shadow-lg p-8">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-gray-800">Choose Your Level</h2>
@@ -55,9 +54,8 @@ const TanglePage: React.FC = () => {
               </div>
             </div>
           </div>
-
           <LevelGrid 
-            category="tangle" 
+            category="tengram" 
             totalLevels={200} 
             onLevelClick={handleLevelClick} 
           />
@@ -67,4 +65,4 @@ const TanglePage: React.FC = () => {
   );
 };
 
-export default TanglePage;
+export default TengramsPage;

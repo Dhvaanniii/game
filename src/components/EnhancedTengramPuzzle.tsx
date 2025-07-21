@@ -1,7 +1,8 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { RotateCw, Trash2, CheckCircle, Move, Layers, Eye, EyeOff, Target, Timer, Star } from 'lucide-react';
-import Fixed10BlocksLibrary from './Fixed10BlocksLibrary';
-import { FIXED_10_BLOCKS, FixedBlock } from '../data/fixedBlocks';
+import { RotateCw, Trash2, CheckCircle, Move, Layers, Eye, EyeOff, Target, Lightbulb, Timer, Zap } from 'lucide-react';
+import FixedBlockLibrary from './FixedBlockLibrary';
+import { FIXED_GAME_BLOCKS } from '../data/gameBlocks';
+import { GameBlock } from '../types/game';
 
 interface PlacedBlock {
   id: string;
@@ -14,32 +15,31 @@ interface PlacedBlock {
   isMirrored: boolean;
 }
 
-interface TangleGameplayProps {
+interface EnhancedTengramPuzzleProps {
   level: number;
-  category: 'tangle' | 'funthinker-basic' | 'funthinker-medium' | 'funthinker-hard';
-  onComplete: (attemptNumber: number, timeUsed: number, points: number) => void;
+  category: 'tengram' | 'funthinker-basic' | 'funthinker-medium' | 'funthinker-hard';
+  onComplete: (attemptNumber: number, timeUsed: number) => void;
   onAttemptFailed: () => void;
   isPlaying: boolean;
   currentAttempt: number;
   timeLeft: number;
-  onGameStart: () => void;
 }
 
-const TangleGameplay: React.FC<TangleGameplayProps> = ({ 
+const EnhancedTengramPuzzle: React.FC<EnhancedTengramPuzzleProps> = ({ 
   level, 
   category,
   onComplete, 
   onAttemptFailed,
   isPlaying,
   currentAttempt,
-  timeLeft,
-  onGameStart
+  timeLeft
 }) => {
   const [placedBlocks, setPlacedBlocks] = useState<PlacedBlock[]>([]);
   const [selectedBlock, setSelectedBlock] = useState<string | null>(null);
   const [draggedBlock, setDraggedBlock] = useState<string | null>(null);
   const [showTarget, setShowTarget] = useState(true);
   const [targetOpacity, setTargetOpacity] = useState(0.5);
+  const [showHint, setShowHint] = useState(false);
   const canvasRef = useRef<HTMLDivElement>(null);
   const dragOffset = useRef({ x: 0, y: 0 });
   const [nextZIndex, setNextZIndex] = useState(1);
@@ -51,12 +51,12 @@ const TangleGameplay: React.FC<TangleGameplayProps> = ({
     }
   }, [timeLeft, isPlaying, onAttemptFailed]);
 
-  const addBlock = (fixedBlock: FixedBlock) => {
+  const addBlock = (gameBlock: GameBlock) => {
     if (!isPlaying) return;
     
     const newBlock: PlacedBlock = {
       id: `placed-${Date.now()}`,
-      blockId: fixedBlock.id,
+      blockId: gameBlock.id,
       x: 100 + Math.random() * 200,
       y: 100 + Math.random() * 150,
       rotation: 0,
@@ -131,16 +131,11 @@ const TangleGameplay: React.FC<TangleGameplayProps> = ({
 
   const mirrorBlock = (blockId: string) => {
     if (!isPlaying) return;
-    const block = placedBlocks.find(b => b.id === blockId);
-    const fixedBlock = FIXED_10_BLOCKS.find(fb => fb.id === block?.blockId);
-    
-    if (fixedBlock?.canMirror) {
-      setPlacedBlocks(prev => prev.map(b => 
-        b.id === blockId 
-          ? { ...b, isMirrored: !b.isMirrored }
-          : b
-      ));
-    }
+    setPlacedBlocks(prev => prev.map(block => 
+      block.id === blockId 
+        ? { ...block, isMirrored: !block.isMirrored }
+        : block
+    ));
   };
 
   const bringToFront = (blockId: string) => {
@@ -178,16 +173,14 @@ const TangleGameplay: React.FC<TangleGameplayProps> = ({
   const checkSolution = () => {
     if (!isPlaying || placedBlocks.length === 0) return;
     
-    // Calculate points based on attempt number
-    const points = currentAttempt === 1 ? 300 : currentAttempt === 2 ? 200 : 100;
-    const timeUsed = 300 - timeLeft; // 5 minutes - remaining time
-    
-    onComplete(currentAttempt, timeUsed, points);
+    // Simple solution check - in real implementation, check if blocks match outline
+    const timeUsed = 60 - timeLeft;
+    onComplete(currentAttempt, timeUsed);
   };
 
   const renderBlock = (block: PlacedBlock) => {
-    const fixedBlock = FIXED_10_BLOCKS.find(fb => fb.id === block.blockId);
-    if (!fixedBlock) return null;
+    const gameBlock = FIXED_GAME_BLOCKS.find(gb => gb.id === block.blockId);
+    if (!gameBlock) return null;
 
     const baseStyle = {
       position: 'absolute' as const,
@@ -210,14 +203,14 @@ const TangleGameplay: React.FC<TangleGameplayProps> = ({
         }}
       >
         <svg 
-          width={fixedBlock.defaultSize} 
-          height={fixedBlock.defaultSize} 
+          width={gameBlock.defaultSize} 
+          height={gameBlock.defaultSize} 
           viewBox="0 0 100 100"
         >
           <path
-            d={fixedBlock.svgPath}
-            fill={fixedBlock.color}
-            stroke={selectedBlock === block.id ? '#1F2937' : '#374151'}
+            d={gameBlock.svgPath}
+            fill="#3B82F6"
+            stroke={selectedBlock === block.id ? '#1F2937' : '#1E40AF'}
             strokeWidth={selectedBlock === block.id ? 3 : 2}
             filter={selectedBlock === block.id ? 'drop-shadow(0 4px 12px rgba(0,0,0,0.3))' : 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'}
           />
@@ -227,27 +220,12 @@ const TangleGameplay: React.FC<TangleGameplayProps> = ({
   };
 
   const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+    return `${Math.floor(seconds / 60)}:${(seconds % 60).toString().padStart(2, '0')}`;
   };
 
   const getTargetImageUrl = () => {
-    try {
-      // Load from uploaded PDF outlines
-      const levels = JSON.parse(localStorage.getItem(`${category}-levels`) || '[]');
-      const currentLevel = levels.find((l: any) => l.levelNumber === level);
-      
-      if (currentLevel && currentLevel.outlineUrl) {
-        return currentLevel.outlineUrl;
-      }
-      
-      // Fallback to placeholder
-      return `https://via.placeholder.com/600x400/e5e7eb/6b7280?text=${category.toUpperCase()}+Level+${level}`;
-    } catch (error) {
-      console.error('Error loading level image:', error);
-      return `https://via.placeholder.com/600x400/e5e7eb/6b7280?text=${category.toUpperCase()}+Level+${level}`;
-    }
+    // In real implementation, load from uploaded PDF outlines
+    return `https://via.placeholder.com/600x400/e5e7eb/6b7280?text=${category.toUpperCase()}+Level+${level}`;
   };
 
   const getPointsForAttempt = (attempt: number) => {
@@ -268,12 +246,12 @@ const TangleGameplay: React.FC<TangleGameplayProps> = ({
             <div className="flex items-center gap-2">
               <Timer className="w-5 h-5 text-blue-600" />
               <span className="text-sm font-medium text-gray-700">Time:</span>
-              <span className={`font-mono font-bold text-lg ${timeLeft < 60 ? 'text-red-600' : 'text-gray-800'}`}>
+              <span className={`font-mono font-bold text-lg ${timeLeft < 20 ? 'text-red-600' : 'text-gray-800'}`}>
                 {formatTime(timeLeft)}
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <Star className="w-5 h-5 text-orange-600" />
+              <Zap className="w-5 h-5 text-orange-600" />
               <span className="text-sm font-medium text-gray-700">Attempt:</span>
               <span className="font-bold text-gray-800">{currentAttempt}/3</span>
             </div>
@@ -289,14 +267,14 @@ const TangleGameplay: React.FC<TangleGameplayProps> = ({
         </div>
       </div>
 
-      {/* Fixed 10 Blocks Library */}
-      <div className="mb-4">
-        <Fixed10BlocksLibrary onBlockSelect={addBlock} disabled={!isPlaying} />
-      </div>
-
       {/* Toolbar */}
       <div className="bg-white rounded-lg shadow-md p-4 mb-4">
         <div className="flex flex-wrap items-center gap-4">
+          {/* Fixed Block Library */}
+          <div className="flex-1">
+            <FixedBlockLibrary onBlockSelect={addBlock} disabled={!isPlaying} />
+          </div>
+
           {/* View Controls */}
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
@@ -306,6 +284,13 @@ const TangleGameplay: React.FC<TangleGameplayProps> = ({
               >
                 {showTarget ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                 <span className="text-sm">Target</span>
+              </button>
+              <button
+                onClick={() => setShowHint(!showHint)}
+                className="flex items-center space-x-1 px-3 py-2 bg-purple-100 hover:bg-purple-200 rounded-lg transition-colors"
+              >
+                <Lightbulb className="w-4 h-4" />
+                <span className="text-sm">Hint</span>
               </button>
             </div>
             {showTarget && (
@@ -325,7 +310,7 @@ const TangleGameplay: React.FC<TangleGameplayProps> = ({
           </div>
 
           {/* Action Buttons */}
-          <div className="flex flex-wrap items-center gap-2 ml-auto">
+          <div className="flex flex-wrap items-center gap-2">
             {selectedBlock && (
               <>
                 <button
@@ -419,9 +404,6 @@ const TangleGameplay: React.FC<TangleGameplayProps> = ({
                 src={getTargetImageUrl()}
                 alt={`Target pattern for ${category} level ${level}`}
                 className="w-full h-48 object-cover"
-                onError={(e) => {
-                  e.currentTarget.src = `https://via.placeholder.com/300x200/e5e7eb/6b7280?text=Level+${level}`;
-                }}
               />
               <div className="absolute inset-0 bg-blue-500 bg-opacity-10 flex items-center justify-center">
                 <div className="text-center text-blue-800">
@@ -429,6 +411,14 @@ const TangleGameplay: React.FC<TangleGameplayProps> = ({
                 </div>
               </div>
             </div>
+            {showHint && (
+              <div className="mt-3 p-3 bg-yellow-50 rounded-lg">
+                <div className="text-sm text-yellow-800">
+                  <strong>Hint:</strong> Use the 10 fixed blocks to recreate this pattern. 
+                  You can rotate, scale, and mirror blocks as needed.
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -465,9 +455,6 @@ const TangleGameplay: React.FC<TangleGameplayProps> = ({
                     src={getTargetImageUrl()}
                     alt="Target overlay"
                     className="w-full h-full object-cover"
-                    onError={(e) => {
-                      e.currentTarget.src = `https://via.placeholder.com/600x400/e5e7eb/6b7280?text=Level+${level}`;
-                    }}
                   />
                 </div>
               )}
@@ -477,7 +464,7 @@ const TangleGameplay: React.FC<TangleGameplayProps> = ({
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                   <div className="text-center text-gray-500">
                     <div className="text-lg font-medium mb-2">Working Canvas</div>
-                    <div className="text-sm">Use the fixed 10 blocks to match the target pattern</div>
+                    <div className="text-sm">Use the fixed blocks to match the target pattern</div>
                   </div>
                 </div>
               )}
@@ -491,7 +478,7 @@ const TangleGameplay: React.FC<TangleGameplayProps> = ({
               <div className="p-4 bg-gray-50 border-t">
                 <div className="flex items-center justify-between">
                   <div className="text-sm text-gray-700">
-                    <strong>Selected:</strong> {FIXED_10_BLOCKS.find(fb => fb.id === placedBlocks.find(pb => pb.id === selectedBlock)?.blockId)?.name}
+                    <strong>Selected:</strong> {FIXED_GAME_BLOCKS.find(gb => gb.id === placedBlocks.find(pb => pb.id === selectedBlock)?.blockId)?.name}
                   </div>
                   <div className="text-sm text-gray-600">
                     <Move className="inline w-4 h-4 mr-1" />
@@ -506,14 +493,14 @@ const TangleGameplay: React.FC<TangleGameplayProps> = ({
 
       {/* Instructions */}
       <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-        <h3 className="font-medium text-blue-900 mb-2">Game Rules:</h3>
+        <h3 className="font-medium text-blue-900 mb-2">How to Play:</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-blue-800">
           <div>
             <ul className="space-y-1">
               <li>• Use the 10 fixed blocks to match the target pattern</li>
               <li>• Drag blocks from the library to the canvas</li>
               <li>• Select blocks to rotate, scale, or mirror them</li>
-              <li>• You have 5 minutes per attempt</li>
+              <li>• You have 1 minute per attempt</li>
             </ul>
           </div>
           <div>
@@ -521,7 +508,7 @@ const TangleGameplay: React.FC<TangleGameplayProps> = ({
               <li>• 1st attempt: 300 points</li>
               <li>• 2nd attempt: 200 points</li>
               <li>• 3rd attempt: 100 points</li>
-              <li>• After 3 attempts, system solves automatically (0 points)</li>
+              <li>• After 3 attempts, the system solves automatically</li>
             </ul>
           </div>
         </div>
@@ -530,4 +517,4 @@ const TangleGameplay: React.FC<TangleGameplayProps> = ({
   );
 };
 
-export default TangleGameplay;
+export default EnhancedTengramPuzzle;

@@ -5,12 +5,40 @@ import Header from '../components/Header';
 import AdminPDFUploader from '../components/AdminPDFUploader';
 import WeeklyReportManager from '../components/WeeklyReportManager';
 import LevelManagementSystem from '../components/LevelManagementSystem';
-import { Users, Puzzle, BarChart3, Settings, Upload, Mail, Calendar, Database, Shield, Eye, Edit, Trash2 } from 'lucide-react';
+import { Users, Puzzle, BarChart3, Settings, Upload, Mail, Calendar, Database, Shield, Eye, Edit, Trash2, FileText, Plus } from 'lucide-react';
+import { apiService } from '../services/api';
+import PDFUploadManager from '../components/PDFUploadManager';
 
 const AdminDashboard: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [users, setUsers] = useState([]);
+  const [levels, setLevels] = useState([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
+  const [loadingLevels, setLoadingLevels] = useState(false);
+  const [error, setError] = useState('');
+
+  // Expand system settings state
+  const [settings, setSettings] = useState({
+    registration: true,
+    maintenance: false,
+    emailNotifications: true,
+    timerDuration: 180,
+    maxAttempts: 3,
+    levelLockDuration: 15,
+    fixedBlocks: true,
+    weeklyReports: true,
+    pdfUpload: true,
+  });
+  const [loadingSettings, setLoadingSettings] = useState(false);
+
+  // Add state for analytics, reports, and puzzle upload
+  const [analytics, setAnalytics] = useState<any>(null);
+  const [reports, setReports] = useState<any[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [uploadSuccess, setUploadSuccess] = useState('');
+  const [uploadError, setUploadError] = useState('');
 
   useEffect(() => {
     if (user && user.userType?.trim() !== 'admin') {
@@ -19,21 +47,141 @@ const AdminDashboard: React.FC = () => {
     if (!user) {
       navigate('/');
     }
-  }, [user, navigate]);
+    fetchUsers();
+    fetchLevels();
+    fetchSettings();
+    // Fetch analytics and reports (add to useEffect)
+    fetchAnalytics();
+    fetchReports();
+  }, [user]);
+
+  const fetchUsers = async () => {
+    setLoadingUsers(true);
+    try {
+      const response = await apiService.getAllUsers();
+      setUsers(response.users || []);
+    } catch (err) {
+      setError('Failed to load users');
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
+
+  const fetchLevels = async () => {
+    setLoadingLevels(true);
+    try {
+      const response = await apiService.getAllLevels();
+      setLevels(response.levels || []);
+    } catch (err) {
+      setError('Failed to load levels');
+    } finally {
+      setLoadingLevels(false);
+    }
+  };
+
+  const handleUnlockLevel = async (userId: string, levelId: string) => {
+    // TODO: Call backend API to unlock level for user
+    // await apiService.unlockLevelForUser(userId, levelId);
+    fetchUsers();
+    fetchLevels();
+  };
+
+  const handleRelockLevel = async (userId: string, levelId: string) => {
+    // TODO: Call backend API to relock level for user
+    // await apiService.relockLevelForUser(userId, levelId);
+    fetchUsers();
+    fetchLevels();
+  };
+
+  const fetchSettings = async () => {
+    setLoadingSettings(true);
+    try {
+      const response = await apiService.getSystemSettings();
+      setSettings({
+        registration: response.settings.registration,
+        maintenance: response.settings.maintenance,
+        emailNotifications: response.settings.emailNotifications,
+        timerDuration: response.settings.timerDuration || 180,
+        maxAttempts: response.settings.maxAttempts || 3,
+        levelLockDuration: response.settings.levelLockDuration || 15,
+        fixedBlocks: response.settings.fixedBlocks !== undefined ? response.settings.fixedBlocks : true,
+        weeklyReports: response.settings.weeklyReports !== undefined ? response.settings.weeklyReports : true,
+        pdfUpload: response.settings.pdfUpload !== undefined ? response.settings.pdfUpload : true,
+      });
+    } catch (err) {
+      setError('Failed to load system settings');
+    } finally {
+      setLoadingSettings(false);
+    }
+  };
+
+  const updateSetting = async (key: string, value: any) => {
+    setLoadingSettings(true);
+    try {
+      const response = await apiService.updateSystemSetting(key, value);
+      setSettings((prev) => ({ ...prev, [key]: value }));
+    } catch (err) {
+      setError('Failed to update system setting');
+    } finally {
+      setLoadingSettings(false);
+    }
+  };
+
+  // Add manual report send handler
+  const manualReportSend = async () => {
+    setLoadingSettings(true);
+    try {
+      await apiService.sendWeeklyReport();
+      setUploadSuccess('Weekly report sent!');
+    } catch (err) {
+      setError('Failed to send weekly report');
+    } finally {
+      setLoadingSettings(false);
+    }
+  };
+
+  // Puzzle upload handler
+  const handlePDFUpload = async (file: File) => {
+    setUploading(true);
+    setUploadSuccess('');
+    setUploadError('');
+    try {
+      const response = await apiService.uploadPDF('tengram', file);
+      if (response.success) {
+        setUploadSuccess('PDF uploaded and levels created successfully!');
+        fetchLevels();
+      } else {
+        setUploadError('Failed to upload PDF');
+      }
+    } catch (err) {
+      setUploadError('Failed to upload PDF');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  // Fetch analytics and reports (add to useEffect)
+  const fetchAnalytics = async () => {
+    // TODO: Call backend API for analytics
+    // setAnalytics(response.analytics);
+  };
+  const fetchReports = async () => {
+    // TODO: Call backend API for reports
+    // setReports(response.reports);
+  };
 
   const tabs = [
     { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
     { id: 'users', label: 'User Management', icon: Users },
-    { id: 'tangle-upload', label: 'Tangle Upload', icon: Upload },
+    { id: 'tengram-upload', label: 'Tengram Upload', icon: Upload },
     { id: 'funthinker-basic-upload', label: 'Funthinker Basic', icon: Upload },
     { id: 'funthinker-medium-upload', label: 'Funthinker Medium', icon: Upload },
     { id: 'funthinker-hard-upload', label: 'Funthinker Hard', icon: Upload },
     { id: 'level-management', label: 'Level Management', icon: Calendar },
+    { id: 'analytics', label: 'Analytics', icon: BarChart3 },
     { id: 'reports', label: 'Weekly Reports', icon: Mail },
     { id: 'system', label: 'System Settings', icon: Settings },
   ];
-
-  const mockUsers = JSON.parse(localStorage.getItem('regularUsers') || '[]');
 
   const renderDashboard = () => (
     <div className="space-y-6">
@@ -45,7 +193,7 @@ const AdminDashboard: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Total Users</p>
-              <p className="text-2xl font-bold text-gray-900">{mockUsers.length}</p>
+              <p className="text-2xl font-bold text-gray-900">{users.length}</p>
               <p className="text-xs text-green-600">Registered users</p>
             </div>
             <Users className="w-8 h-8 text-blue-500" />
@@ -57,7 +205,7 @@ const AdminDashboard: React.FC = () => {
             <div>
               <p className="text-sm font-medium text-gray-600">Total Levels</p>
               <p className="text-2xl font-bold text-gray-900">
-                {['tangle', 'funthinker-basic', 'funthinker-medium', 'funthinker-hard']
+                {['tengram', 'funthinker-basic', 'funthinker-medium', 'funthinker-hard']
                   .reduce((total, category) => {
                     const levels = JSON.parse(localStorage.getItem(`${category}-levels`) || '[]');
                     return total + levels.length;
@@ -97,7 +245,7 @@ const AdminDashboard: React.FC = () => {
         <div className="bg-white rounded-lg shadow p-6">
           <h3 className="text-lg font-semibold text-gray-800 mb-4">Levels by Category</h3>
           <div className="space-y-3">
-            {['tangle', 'funthinker-basic', 'funthinker-medium', 'funthinker-hard'].map(category => {
+            {['tengram', 'funthinker-basic', 'funthinker-medium', 'funthinker-hard'].map(category => {
               const levels = JSON.parse(localStorage.getItem(`${category}-levels`) || '[]');
               const count = levels.length;
               const maxCount = 200;
@@ -155,7 +303,7 @@ const AdminDashboard: React.FC = () => {
           <div className="space-y-1">
             <div>📁 D:/PuzzleGame/</div>
             <div className="ml-4">📁 outlines/</div>
-            <div className="ml-8">📁 tangle/ (level_1.svg, level_2.svg, ...)</div>
+            <div className="ml-8">📁 tengram/ (level_1.svg, level_2.svg, ...)</div>
             <div className="ml-8">📁 funthinker-basic/ (level_1.svg, level_2.svg, ...)</div>
             <div className="ml-8">📁 funthinker-medium/ (level_1.svg, level_2.svg, ...)</div>
             <div className="ml-8">📁 funthinker-hard/ (level_1.svg, level_2.svg, ...)</div>
@@ -173,7 +321,7 @@ const AdminDashboard: React.FC = () => {
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold text-gray-800">User Management</h2>
         <div className="text-sm text-gray-600">
-          Total Users: {mockUsers.length}
+          Total Users: {users.length}
         </div>
       </div>
 
@@ -191,7 +339,7 @@ const AdminDashboard: React.FC = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {mockUsers.map((user: any) => (
+              {users.map((user: any) => (
                 <tr key={user.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div>
@@ -232,7 +380,7 @@ const AdminDashboard: React.FC = () => {
         </div>
       </div>
 
-      {mockUsers.length === 0 && (
+      {users.length === 0 && (
         <div className="text-center py-8 text-gray-500">
           <Users className="w-12 h-12 mx-auto mb-4 text-gray-300" />
           <p>No users registered yet.</p>
@@ -411,6 +559,185 @@ const AdminDashboard: React.FC = () => {
     </div>
   );
 
+  const renderSettings = () => (
+    <div className="space-y-6">
+      <h2 className="text-2xl font-bold text-gray-800">System Settings</h2>
+      <div className="bg-white rounded-lg shadow p-6 space-y-4">
+        {/* Registration */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-medium text-gray-900">User Registration</h3>
+            <p className="text-sm text-gray-500">Allow new users to register</p>
+          </div>
+          <button
+            className={`px-4 py-2 rounded-lg text-white ${settings.registration ? 'bg-blue-500 hover:bg-blue-600' : 'bg-gray-500 hover:bg-gray-600'}`}
+            onClick={() => updateSetting('registration', !settings.registration)}
+            disabled={loadingSettings}
+          >
+            {settings.registration ? 'Enabled' : 'Disabled'}
+          </button>
+        </div>
+        {/* Maintenance */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-medium text-gray-900">Maintenance Mode</h3>
+            <p className="text-sm text-gray-500">Put the system in maintenance mode</p>
+          </div>
+          <button
+            className={`px-4 py-2 rounded-lg text-white ${settings.maintenance ? 'bg-orange-500 hover:bg-orange-600' : 'bg-gray-500 hover:bg-gray-600'}`}
+            onClick={() => updateSetting('maintenance', !settings.maintenance)}
+            disabled={loadingSettings}
+          >
+            {settings.maintenance ? 'Enabled' : 'Disabled'}
+          </button>
+        </div>
+        {/* Email Notifications */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-medium text-gray-900">Email Notifications</h3>
+            <p className="text-sm text-gray-500">Send email notifications to users</p>
+          </div>
+          <button
+            className={`px-4 py-2 rounded-lg text-white ${settings.emailNotifications ? 'bg-blue-500 hover:bg-blue-600' : 'bg-gray-500 hover:bg-gray-600'}`}
+            onClick={() => updateSetting('emailNotifications', !settings.emailNotifications)}
+            disabled={loadingSettings}
+          >
+            {settings.emailNotifications ? 'Enabled' : 'Disabled'}
+          </button>
+        </div>
+        {/* Timer Duration */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-medium text-gray-900">Timer Duration</h3>
+            <p className="text-sm text-gray-500">Time limit per attempt</p>
+          </div>
+          <select
+            className="px-3 py-2 border border-gray-300 rounded-lg"
+            value={settings.timerDuration}
+            onChange={e => updateSetting('timerDuration', Number(e.target.value))}
+            disabled={loadingSettings}
+          >
+            <option value={60}>1 minute</option>
+            <option value={120}>2 minutes</option>
+            <option value={180}>3 minutes</option>
+            <option value={240}>4 minutes</option>
+          </select>
+        </div>
+        {/* Max Attempts */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-medium text-gray-900">Max Attempts</h3>
+            <p className="text-sm text-gray-500">Maximum attempts per level</p>
+          </div>
+          <select
+            className="px-3 py-2 border border-gray-300 rounded-lg"
+            value={settings.maxAttempts}
+            onChange={e => updateSetting('maxAttempts', e.target.value === 'unlimited' ? 'unlimited' : Number(e.target.value))}
+            disabled={loadingSettings}
+          >
+            <option value={3}>3 attempts</option>
+            <option value={5}>5 attempts</option>
+            <option value="unlimited">Unlimited</option>
+          </select>
+        </div>
+        {/* Level Lock Duration */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-medium text-gray-900">Level Lock Duration</h3>
+            <p className="text-sm text-gray-500">Days before level locks</p>
+          </div>
+          <select
+            className="px-3 py-2 border border-gray-300 rounded-lg"
+            value={settings.levelLockDuration}
+            onChange={e => updateSetting('levelLockDuration', e.target.value === 'never' ? 'never' : Number(e.target.value))}
+            disabled={loadingSettings}
+          >
+            <option value={15}>15 days</option>
+            <option value={30}>30 days</option>
+            <option value="never">Never lock</option>
+          </select>
+        </div>
+        {/* Fixed Blocks System */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-medium text-gray-900">Fixed 10 Blocks System</h3>
+            <p className="text-sm text-gray-500">10 blocks for all levels</p>
+          </div>
+          <button
+            className={`px-4 py-2 rounded-lg text-white ${settings.fixedBlocks ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-500 hover:bg-gray-600'}`}
+            onClick={() => updateSetting('fixedBlocks', !settings.fixedBlocks)}
+            disabled={loadingSettings}
+          >
+            {settings.fixedBlocks ? 'Active' : 'Inactive'}
+          </button>
+        </div>
+        {/* Weekly Reports */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-medium text-gray-900">Weekly Reports</h3>
+            <p className="text-sm text-gray-500">Send weekly progress reports</p>
+          </div>
+          <button
+            className={`px-4 py-2 rounded-lg text-white ${settings.weeklyReports ? 'bg-blue-500 hover:bg-blue-600' : 'bg-gray-500 hover:bg-gray-600'}`}
+            onClick={() => updateSetting('weeklyReports', !settings.weeklyReports)}
+            disabled={loadingSettings}
+          >
+            {settings.weeklyReports ? 'Enabled' : 'Disabled'}
+          </button>
+          <button
+            className="ml-4 px-4 py-2 rounded-lg text-white bg-purple-500 hover:bg-purple-600"
+            onClick={manualReportSend}
+            disabled={loadingSettings}
+          >
+            Send Report Now
+          </button>
+        </div>
+        {/* PDF Upload System */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-medium text-gray-900">PDF Upload System</h3>
+            <p className="text-sm text-gray-500">Allow PDF upload for new levels</p>
+          </div>
+          <button
+            className={`px-4 py-2 rounded-lg text-white ${settings.pdfUpload ? 'bg-blue-500 hover:bg-blue-600' : 'bg-gray-500 hover:bg-gray-600'}`}
+            onClick={() => updateSetting('pdfUpload', !settings.pdfUpload)}
+            disabled={loadingSettings}
+          >
+            {settings.pdfUpload ? 'Enabled' : 'Disabled'}
+          </button>
+        </div>
+        {loadingSettings && <div className="text-blue-600">Updating settings...</div>}
+        {error && <div className="text-red-600">{error}</div>}
+      </div>
+    </div>
+  );
+
+  const renderPuzzleUpload = () => (
+    <div className="space-y-6">
+      <h2 className="text-2xl font-bold text-gray-800">Tengram PDF Upload</h2>
+      <PDFUploadManager category="tengram" onLevelsCreated={() => fetchLevels()} />
+      {uploading && <div className="text-blue-600">Uploading...</div>}
+      {uploadSuccess && <div className="text-green-600">{uploadSuccess}</div>}
+      {uploadError && <div className="text-red-600">{uploadError}</div>}
+    </div>
+  );
+
+  const renderAnalytics = () => (
+    <div className="space-y-6">
+      <h2 className="text-2xl font-bold text-gray-800">Analytics Dashboard</h2>
+      {/* TODO: Show real analytics from backend */}
+      <div className="bg-white rounded-lg shadow p-6">Coming soon: Real-time analytics</div>
+    </div>
+  );
+
+  const renderReports = () => (
+    <div className="space-y-6">
+      <h2 className="text-2xl font-bold text-gray-800">Weekly Reports</h2>
+      <WeeklyReportManager />
+      {/* TODO: Show/download reports from backend */}
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <Header />
@@ -448,13 +775,22 @@ const AdminDashboard: React.FC = () => {
           <div className="flex-1">
             {activeTab === 'dashboard' && renderDashboard()}
             {activeTab === 'users' && renderUsers()}
-            {activeTab === 'tangle-upload' && <AdminPDFUploader category="tangle" />}
-            {activeTab === 'funthinker-basic-upload' && <AdminPDFUploader category="funthinker-basic" />}
-            {activeTab === 'funthinker-medium-upload' && <AdminPDFUploader category="funthinker-medium" />}
-            {activeTab === 'funthinker-hard-upload' && <AdminPDFUploader category="funthinker-hard" />}
+            {activeTab === 'tengram-upload' && (
+              <PDFUploadManager category="tengram" onLevelsCreated={() => fetchLevels()} />
+            )}
+            {activeTab === 'funthinker-basic-upload' && (
+              <PDFUploadManager category="funthinker-basic" onLevelsCreated={() => fetchLevels()} />
+            )}
+            {activeTab === 'funthinker-medium-upload' && (
+              <PDFUploadManager category="funthinker-medium" onLevelsCreated={() => fetchLevels()} />
+            )}
+            {activeTab === 'funthinker-hard-upload' && (
+              <PDFUploadManager category="funthinker-hard" onLevelsCreated={() => fetchLevels()} />
+            )}
             {activeTab === 'level-management' && <LevelManagementSystem />}
-            {activeTab === 'reports' && <WeeklyReportManager />}
-            {activeTab === 'system' && renderSystemSettings()}
+            {activeTab === 'analytics' && renderAnalytics()}
+            {activeTab === 'reports' && renderReports()}
+            {activeTab === 'system' && renderSettings()}
           </div>
         </div>
       </main>

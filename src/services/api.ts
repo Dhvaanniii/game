@@ -173,6 +173,18 @@ class ApiService {
     return await this.request('/levels/admin/all');
   }
 
+  // System settings methods
+  async getSystemSettings() {
+    return await this.request('/admin/system-settings');
+  }
+
+  async updateSystemSetting(key: string, value: any) {
+    return await this.request('/admin/system-settings', {
+      method: 'PUT',
+      body: JSON.stringify({ key, value }),
+    });
+  }
+
   logout() {
     this.token = null;
     localStorage.removeItem('authToken');

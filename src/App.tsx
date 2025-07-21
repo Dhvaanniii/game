@@ -5,8 +5,8 @@ import IndexPage from './pages/IndexPage';
 import LoginPage from './pages/LoginPage';
 import RegistrationPage from './pages/RegistrationPage';
 import HomePage from './pages/HomePage';
-import TanglePage from './pages/TanglePage';
-import TanglePlaygroundPage from './pages/TanglePlaygroundPage';
+import TengramsPage from './pages/TengramsPage';
+import TengramPlaygroundPage from './pages/TengramPlaygroundPage';
 import FunThinkerPage from './pages/FunThinkerPage';
 import FunThinkerBasicPage from './pages/FunThinkerBasicPage';
 import FunThinkerMediumPage from './pages/FunThinkerMediumPage';
@@ -29,8 +29,8 @@ function App() {
               <Route path="*" element={<Navigate to="/" replace />} /> {/* Catch-all route with redirect */}
               {/* Protected routes */}
               <Route path="/home" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
-              <Route path="/tangles" element={<ProtectedRoute><TanglePage /></ProtectedRoute>} />
-              <Route path="/tangles/play/:level" element={<ProtectedRoute><TanglePlaygroundPage /></ProtectedRoute>} />
+              <Route path="/tengrams" element={<ProtectedRoute><TengramsPage /></ProtectedRoute>} />
+              <Route path="/tengrams/play/:level" element={<ProtectedRoute><TengramPlaygroundPage /></ProtectedRoute>} />
               <Route path="/funthinkers" element={<ProtectedRoute><FunThinkerPage /></ProtectedRoute>} />
               <Route path="/funthinkers/basic" element={<ProtectedRoute><FunThinkerBasicPage /></ProtectedRoute>} />
               <Route path="/funthinkers/medium" element={<ProtectedRoute><FunThinkerMediumPage /></ProtectedRoute>} />

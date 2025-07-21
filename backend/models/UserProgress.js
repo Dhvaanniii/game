@@ -119,7 +119,7 @@ class UserProgress {
     };
 
     // Calculate category-wise stats
-    const categories = ['tangle', 'funthinker-basic', 'funthinker-medium', 'funthinker-hard'];
+    const categories = ['tengram', 'funthinker-basic', 'funthinker-medium', 'funthinker-hard'];
     
     categories.forEach(category => {
       const categoryProgress = progress.filter(p => p.category === category);
