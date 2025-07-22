@@ -8,7 +8,7 @@ const sharp = require('sharp');
 const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
 const path = require('path');
-const OUTLINES_DIR = path.join(__dirname, '../outlines/tengram');
+const OUTLINES_DIR = path.join(__dirname, '../outlines/tangram');
 
 // Ensure outlines directory exists
 if (!fs.existsSync(OUTLINES_DIR)) {
@@ -16,7 +16,7 @@ if (!fs.existsSync(OUTLINES_DIR)) {
 }
 
 // Serve outlines as static files
-router.use('/static/outlines/tengram', express.static(OUTLINES_DIR));
+router.use('/static/outlines/tangram', express.static(OUTLINES_DIR));
 
 // Configure multer for file uploads
 const upload = multer({
@@ -62,7 +62,7 @@ router.get('/:category/:levelNumber', async (req, res) => {
   }
 });
 
-// Upload PDF and create levels (Tengram)
+// Upload PDF and create levels (Tangram)
 router.post('/upload/:category', upload.single('pdf'), async (req, res) => {
   try {
     const { category } = req.params;
@@ -72,9 +72,9 @@ router.post('/upload/:category', upload.single('pdf'), async (req, res) => {
       return res.status(400).json({ error: 'PDF file is required' });
     }
 
-    // Only process for tengram category
-    if (category !== 'tengram') {
-      return res.status(400).json({ error: 'Only tengram PDF upload is supported in this endpoint.' });
+    // Only process for tangram category
+    if (category !== 'tangram') {
+      return res.status(400).json({ error: 'Only tangram PDF upload is supported in this endpoint.' });
     }
 
     // Get next level number for this category
@@ -93,13 +93,10 @@ router.post('/upload/:category', upload.single('pdf'), async (req, res) => {
       newPdf.addPage(copiedPage);
       const singlePagePdfBytes = await newPdf.save();
 
-      // Convert PDF page to PNG using sharp (requires poppler-utils or similar for real PDF to image)
-      // For demo, just save the PDF page as a file (in real use, convert to PNG/SVG)
       const levelNumber = nextLevelNumber + i;
       const outlinePath = path.join(OUTLINES_DIR, `level_${levelNumber}.pdf`);
       fs.writeFileSync(outlinePath, singlePagePdfBytes);
-      // In real use, convert to PNG and set outlineUrl to /static/outlines/tengram/level_X.png
-      const outlineUrl = `/api/levels/static/outlines/tengram/level_${levelNumber}.pdf`;
+      const outlineUrl = `/api/levels/static/outlines/tangram/level_${levelNumber}.pdf`;
 
       const unlockDate = new Date();
       unlockDate.setDate(unlockDate.getDate() + (levelNumber - 1));

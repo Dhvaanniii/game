@@ -14,9 +14,9 @@ interface PlacedBlock {
   isMirrored: boolean;
 }
 
-interface TengramGameplayProps {
+interface TangramGameplayProps {
   level: number;
-  category: 'tengram' | 'funthinker-basic' | 'funthinker-medium' | 'funthinker-hard';
+  category: 'tangram' | 'funthinker-basic' | 'funthinker-medium' | 'funthinker-hard';
   onComplete: (attemptNumber: number, timeUsed: number, points: number) => void;
   onAttemptFailed: () => void;
   isPlaying: boolean;
@@ -25,7 +25,7 @@ interface TengramGameplayProps {
   onGameStart: () => void;
 }
 
-const TengramGameplay: React.FC<TengramGameplayProps> = ({ 
+const TangramGameplay: React.FC<TangramGameplayProps> = ({ 
   level, 
   category,
   onComplete, 
@@ -528,4 +528,4 @@ const TengramGameplay: React.FC<TengramGameplayProps> = ({
   );
 };
 
-export default TengramGameplay;
+export default TangramGameplay;

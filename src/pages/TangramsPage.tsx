@@ -4,11 +4,11 @@ import Header from '../components/Header';
 import LevelGrid from '../components/LevelGrid';
 import { Triangle, Award, Clock } from 'lucide-react';
 
-const TengramsPage: React.FC = () => {
+const TangramsPage: React.FC = () => {
   const navigate = useNavigate();
 
   const handleLevelClick = (level: number) => {
-    navigate(`/tengrams/play/${level}`);
+    navigate(`/tangrams/play/${level}`);
   };
 
   return (
@@ -20,7 +20,7 @@ const TengramsPage: React.FC = () => {
           <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-orange-500 to-red-600 rounded-full mb-4">
             <Triangle className="w-10 h-10 text-white" />
           </div>
-          <h1 className="text-4xl font-bold text-gray-800 mb-2">Tengrams</h1>
+          <h1 className="text-4xl font-bold text-gray-800 mb-2">Tangrams</h1>
           <p className="text-xl text-gray-600 mb-6">
             Solve geometric puzzles and earn stars based on your performance
           </p>
@@ -55,7 +55,7 @@ const TengramsPage: React.FC = () => {
             </div>
           </div>
           <LevelGrid 
-            category="tengram" 
+            category="tangram" 
             totalLevels={200} 
             onLevelClick={handleLevelClick} 
           />
@@ -65,4 +65,4 @@ const TengramsPage: React.FC = () => {
   );
 };
 
-export default TengramsPage;
+export default TangramsPage;

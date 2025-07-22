@@ -3,10 +3,10 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useGame } from '../contexts/GameContext';
 import { useAuth } from '../contexts/AuthContext';
 import Header from '../components/Header';
-import TengramGameplay from '../components/TengramGameplay';
+import TangramGameplay from '../components/TangramGameplay';
 import { Play, Pause, RotateCcw, Home, Star, Trophy } from 'lucide-react';
 
-const TengramPlaygroundPage: React.FC = () => {
+const TangramPlaygroundPage: React.FC = () => {
   const { level } = useParams<{ level: string }>();
   const navigate = useNavigate();
   const { updateProgress, unlockNextLevel } = useGame();
@@ -73,9 +73,9 @@ const TengramPlaygroundPage: React.FC = () => {
     setStars(earnedStars);
     
     // Update progress
-    const levelId = `tengram-${level}`;
+    const levelId = `tangram-${level}`;
     updateProgress(levelId, earnedStars, attemptNumber);
-    unlockNextLevel(levelId, 'tengram');
+    unlockNextLevel(levelId, 'tangram');
     
     // Add coins based on points
     addCoins(earnedPoints);
@@ -102,7 +102,7 @@ const TengramPlaygroundPage: React.FC = () => {
   const handleNextLevel = () => {
     const nextLevel = parseInt(level!) + 1;
     if (nextLevel <= 200) {
-      navigate(`/tengrams/play/${nextLevel}`);
+      navigate(`/tangrams/play/${nextLevel}`);
       setShowResult(false);
       setGameCompleted(false);
       setAttempts(0);
@@ -110,7 +110,7 @@ const TengramPlaygroundPage: React.FC = () => {
       setPoints(0);
       setTimeLeft(300);
     } else {
-      navigate('/tengrams');
+      navigate('/tangrams');
     }
   };
 
@@ -131,7 +131,7 @@ const TengramPlaygroundPage: React.FC = () => {
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">
-            Tengram Level {level}
+            Tangram Level {level}
           </h1>
           <div className="flex items-center justify-center space-x-6 text-lg">
             <div className="flex items-center space-x-2">
@@ -148,9 +148,9 @@ const TengramPlaygroundPage: React.FC = () => {
         </div>
 
         <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
-          <TengramGameplay 
+          <TangramGameplay 
             level={parseInt(level!)} 
-            category="tengram"
+            category="tangram"
             onComplete={handleGameComplete}
             onAttemptFailed={handleAttemptFailed}
             isPlaying={isPlaying}
@@ -191,7 +191,7 @@ const TengramPlaygroundPage: React.FC = () => {
             </button>
 
             <button
-              onClick={() => navigate('/tengrams')}
+              onClick={() => navigate('/tangrams')}
               className="flex items-center space-x-2 bg-purple-500 hover:bg-purple-600 text-white px-6 py-3 rounded-xl font-semibold transition-colors"
             >
               <Home className="w-5 h-5" />
@@ -225,7 +225,7 @@ const TengramPlaygroundPage: React.FC = () => {
 
               <div className="flex space-x-4">
                 <button
-                  onClick={() => navigate('/tengrams')}
+                  onClick={() => navigate('/tangrams')}
                   className="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-3 rounded-xl font-semibold transition-colors"
                 >
                   Back to Levels
@@ -245,4 +245,4 @@ const TengramPlaygroundPage: React.FC = () => {
   );
 };
 
-export default TengramPlaygroundPage;
+export default TangramPlaygroundPage;

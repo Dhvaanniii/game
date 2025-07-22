@@ -5,7 +5,7 @@ import { Upload, FileText, Trash2, CheckCircle, AlertCircle, Folder, Eye } from 
 interface PDFLevel {
   levelNumber: number;
   pageNumber: number;
-  category: 'tengram' | 'funthinker-basic' | 'funthinker-medium' | 'funthinker-hard';
+  category: 'tangram' | 'funthinker-basic' | 'funthinker-medium' | 'funthinker-hard';
   outlineUrl: string;
   unlockDate: Date;
   lockDate: Date;
@@ -14,7 +14,7 @@ interface PDFLevel {
 }
 
 interface AdminPDFUploaderProps {
-  category: 'tengram' | 'funthinker-basic' | 'funthinker-medium' | 'funthinker-hard';
+  category: 'tangram' | 'funthinker-basic' | 'funthinker-medium' | 'funthinker-hard';
   onLevelsCreated?: (levels: PDFLevel[]) => void;
 }
 
@@ -148,7 +148,7 @@ const AdminPDFUploader: React.FC<AdminPDFUploaderProps> = ({ category, onLevelsC
 
   const getCategoryDisplayName = () => {
     switch (category) {
-      case 'tengram': return 'Tengrams';
+      case 'tangram': return 'Tangrams';
       case 'funthinker-basic': return 'Funthinker Basic';
       case 'funthinker-medium': return 'Funthinker Medium';
       case 'funthinker-hard': return 'Funthinker Hard';

@@ -7,7 +7,7 @@ export interface LevelImage {
   uploadDate: Date;
 }
 
-const STORAGE_KEY = 'tengramLevelImages';
+const STORAGE_KEY = 'tangramLevelImages';
 
 export const getLevelImages = (): LevelImage[] => {
   try {
@@ -83,7 +83,7 @@ export const exportLevelImages = (): void => {
   
   const link = document.createElement('a');
   link.href = url;
-  link.download = `tengram-level-images-${new Date().toISOString().split('T')[0]}.json`;
+  link.download = `tangram-level-images-${new Date().toISOString().split('T')[0]}.json`;
   link.click();
   
   URL.revokeObjectURL(url);

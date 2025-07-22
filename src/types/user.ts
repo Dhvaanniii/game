@@ -21,7 +21,7 @@ export interface GameAttempt {
   id: string;
   userId: string;
   levelId: string;
-  category: 'tengram' | 'funthinker-basic' | 'funthinker-medium' | 'funthinker-hard';
+  category: 'tangram' | 'funthinker-basic' | 'funthinker-medium' | 'funthinker-hard';
   attemptNumber: number;
   points: number;
   completed: boolean;
@@ -32,7 +32,7 @@ export interface GameAttempt {
 export interface Level {
   id: string;
   levelNumber: number;
-  category: 'tengram' | 'funthinker-basic' | 'funthinker-medium' | 'funthinker-hard';
+  category: 'tangram' | 'funthinker-basic' | 'funthinker-medium' | 'funthinker-hard';
   outlineUrl: string;
   unlockDate: Date;
   lockDate: Date;

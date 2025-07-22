@@ -146,7 +146,7 @@ const AdminDashboard: React.FC = () => {
     setUploadSuccess('');
     setUploadError('');
     try {
-      const response = await apiService.uploadPDF('tengram', file);
+      const response = await apiService.uploadPDF('tangram', file);
       if (response.success) {
         setUploadSuccess('PDF uploaded and levels created successfully!');
         fetchLevels();
@@ -173,7 +173,7 @@ const AdminDashboard: React.FC = () => {
   const tabs = [
     { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
     { id: 'users', label: 'User Management', icon: Users },
-    { id: 'tengram-upload', label: 'Tengram Upload', icon: Upload },
+    { id: 'tangram-upload', label: 'Tangram Upload', icon: Upload },
     { id: 'funthinker-basic-upload', label: 'Funthinker Basic', icon: Upload },
     { id: 'funthinker-medium-upload', label: 'Funthinker Medium', icon: Upload },
     { id: 'funthinker-hard-upload', label: 'Funthinker Hard', icon: Upload },
@@ -205,7 +205,7 @@ const AdminDashboard: React.FC = () => {
             <div>
               <p className="text-sm font-medium text-gray-600">Total Levels</p>
               <p className="text-2xl font-bold text-gray-900">
-                {['tengram', 'funthinker-basic', 'funthinker-medium', 'funthinker-hard']
+                {['tangram', 'funthinker-basic', 'funthinker-medium', 'funthinker-hard']
                   .reduce((total, category) => {
                     const levels = JSON.parse(localStorage.getItem(`${category}-levels`) || '[]');
                     return total + levels.length;
@@ -245,7 +245,7 @@ const AdminDashboard: React.FC = () => {
         <div className="bg-white rounded-lg shadow p-6">
           <h3 className="text-lg font-semibold text-gray-800 mb-4">Levels by Category</h3>
           <div className="space-y-3">
-            {['tengram', 'funthinker-basic', 'funthinker-medium', 'funthinker-hard'].map(category => {
+            {['tangram', 'funthinker-basic', 'funthinker-medium', 'funthinker-hard'].map(category => {
               const levels = JSON.parse(localStorage.getItem(`${category}-levels`) || '[]');
               const count = levels.length;
               const maxCount = 200;
@@ -303,7 +303,7 @@ const AdminDashboard: React.FC = () => {
           <div className="space-y-1">
             <div>📁 D:/PuzzleGame/</div>
             <div className="ml-4">📁 outlines/</div>
-            <div className="ml-8">📁 tengram/ (level_1.svg, level_2.svg, ...)</div>
+            <div className="ml-8">📁 tangram/ (level_1.svg, level_2.svg, ...)</div>
             <div className="ml-8">📁 funthinker-basic/ (level_1.svg, level_2.svg, ...)</div>
             <div className="ml-8">📁 funthinker-medium/ (level_1.svg, level_2.svg, ...)</div>
             <div className="ml-8">📁 funthinker-hard/ (level_1.svg, level_2.svg, ...)</div>
@@ -714,8 +714,8 @@ const AdminDashboard: React.FC = () => {
 
   const renderPuzzleUpload = () => (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-800">Tengram PDF Upload</h2>
-      <PDFUploadManager category="tengram" onLevelsCreated={() => fetchLevels()} />
+      <h2 className="text-2xl font-bold text-gray-800">Tangram PDF Upload</h2>
+      <PDFUploadManager category="tangram" onLevelsCreated={() => fetchLevels()} />
       {uploading && <div className="text-blue-600">Uploading...</div>}
       {uploadSuccess && <div className="text-green-600">{uploadSuccess}</div>}
       {uploadError && <div className="text-red-600">{uploadError}</div>}
@@ -775,8 +775,8 @@ const AdminDashboard: React.FC = () => {
           <div className="flex-1">
             {activeTab === 'dashboard' && renderDashboard()}
             {activeTab === 'users' && renderUsers()}
-            {activeTab === 'tengram-upload' && (
-              <PDFUploadManager category="tengram" onLevelsCreated={() => fetchLevels()} />
+            {activeTab === 'tangram-upload' && (
+              <PDFUploadManager category="tangram" onLevelsCreated={() => fetchLevels()} />
             )}
             {activeTab === 'funthinker-basic-upload' && (
               <PDFUploadManager category="funthinker-basic" onLevelsCreated={() => fetchLevels()} />

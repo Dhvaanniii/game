@@ -10,7 +10,7 @@ export interface GameAttempt {
 
 export interface LevelProgress {
   levelId: string;
-  category: 'tengram' | 'funthinker-basic' | 'funthinker-medium' | 'funthinker-hard';
+  category: 'tangram' | 'funthinker-basic' | 'funthinker-medium' | 'funthinker-hard';
   attempts: GameAttempt[];
   bestScore: number;
   totalPoints: number;

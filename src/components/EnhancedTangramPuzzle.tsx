@@ -15,9 +15,9 @@ interface PlacedBlock {
   isMirrored: boolean;
 }
 
-interface EnhancedTengramPuzzleProps {
+interface EnhancedTangramPuzzleProps {
   level: number;
-  category: 'tengram' | 'funthinker-basic' | 'funthinker-medium' | 'funthinker-hard';
+  category: 'tangram' | 'funthinker-basic' | 'funthinker-medium' | 'funthinker-hard';
   onComplete: (attemptNumber: number, timeUsed: number) => void;
   onAttemptFailed: () => void;
   isPlaying: boolean;
@@ -25,7 +25,7 @@ interface EnhancedTengramPuzzleProps {
   timeLeft: number;
 }
 
-const EnhancedTengramPuzzle: React.FC<EnhancedTengramPuzzleProps> = ({ 
+const EnhancedTangramPuzzle: React.FC<EnhancedTangramPuzzleProps> = ({ 
   level, 
   category,
   onComplete, 
@@ -517,4 +517,4 @@ const EnhancedTengramPuzzle: React.FC<EnhancedTengramPuzzleProps> = ({
   );
 };
 
-export default EnhancedTengramPuzzle;
+export default EnhancedTangramPuzzle;

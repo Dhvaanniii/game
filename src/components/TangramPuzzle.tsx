@@ -15,13 +15,13 @@ interface Shape {
   zIndex: number;
 }
 
-interface TengramPuzzleProps {
+interface TangramPuzzleProps {
   level: number;
   onComplete: () => void;
   isPlaying: boolean;
 }
 
-const TengramPuzzle: React.FC<TengramPuzzleProps> = ({ level, onComplete, isPlaying }) => {
+const TangramPuzzle: React.FC<TangramPuzzleProps> = ({ level, onComplete, isPlaying }) => {
   const [shapes, setShapes] = useState<Shape[]>([]);
   const [selectedShape, setSelectedShape] = useState<string | null>(null);
   const [draggedShape, setDraggedShape] = useState<string | null>(null);
@@ -540,4 +540,4 @@ const TengramPuzzle: React.FC<TengramPuzzleProps> = ({ level, onComplete, isPlay
   );
 };
 
-export default TengramPuzzle;
+export default TangramPuzzle;
