@@ -1,7 +1,7 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { RotateCw, Trash2, CheckCircle, Move, Layers, Eye, EyeOff, Target, Timer, Star } from 'lucide-react';
-import Fixed10BlocksLibrary from './Fixed10BlocksLibrary';
-import { FIXED_10_BLOCKS, FixedBlock } from '../data/fixedBlocks';
+import FixedTangramBlocksLibrary from './FixedTangramBlocksLibrary';
+import { FIXED_TANGRAM_BLOCKS, FixedBlock } from '../data/fixedBlocks';
 
 interface PlacedBlock {
   id: string;
@@ -130,7 +130,7 @@ const TangramGameplay: React.FC<TangramGameplayProps> = ({
   const mirrorBlock = (blockId: string) => {
     if (!isPlaying) return;
     const block = placedBlocks.find(b => b.id === blockId);
-    const fixedBlock = FIXED_10_BLOCKS.find(fb => fb.id === block?.blockId);
+    const fixedBlock = FIXED_TANGRAM_BLOCKS.find(fb => fb.id === block?.blockId);
     
     if (fixedBlock?.canMirror) {
       setPlacedBlocks(prev => prev.map(b => 
@@ -184,7 +184,7 @@ const TangramGameplay: React.FC<TangramGameplayProps> = ({
   };
 
   const renderBlock = (block: PlacedBlock) => {
-    const fixedBlock = FIXED_10_BLOCKS.find(fb => fb.id === block.blockId);
+    const fixedBlock = FIXED_TANGRAM_BLOCKS.find(fb => fb.id === block.blockId);
     if (!fixedBlock) return null;
 
     const baseStyle = {
@@ -289,7 +289,7 @@ const TangramGameplay: React.FC<TangramGameplayProps> = ({
 
       {/* Fixed 10 Blocks Library */}
       <div className="mb-4">
-        <Fixed10BlocksLibrary onBlockSelect={addBlock} disabled={!isPlaying} />
+        <FixedTangramBlocksLibrary onBlockSelect={addBlock} disabled={!isPlaying} />
       </div>
 
       {/* Toolbar */}
@@ -475,7 +475,7 @@ const TangramGameplay: React.FC<TangramGameplayProps> = ({
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                   <div className="text-center text-gray-500">
                     <div className="text-lg font-medium mb-2">Working Canvas</div>
-                    <div className="text-sm">Use the fixed 10 blocks to match the target pattern</div>
+                    <div className="text-sm">Use the 7 tangram blocks to match the target pattern</div>
                   </div>
                 </div>
               )}
@@ -489,7 +489,7 @@ const TangramGameplay: React.FC<TangramGameplayProps> = ({
               <div className="p-4 bg-gray-50 border-t">
                 <div className="flex items-center justify-between">
                   <div className="text-sm text-gray-700">
-                    <strong>Selected:</strong> {FIXED_10_BLOCKS.find(fb => fb.id === placedBlocks.find(pb => pb.id === selectedBlock)?.blockId)?.name}
+                    <strong>Selected:</strong> {FIXED_TANGRAM_BLOCKS.find(fb => fb.id === placedBlocks.find(pb => pb.id === selectedBlock)?.blockId)?.name}
                   </div>
                   <div className="text-sm text-gray-600">
                     <Move className="inline w-4 h-4 mr-1" />
@@ -508,7 +508,7 @@ const TangramGameplay: React.FC<TangramGameplayProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-blue-800">
           <div>
             <ul className="space-y-1">
-              <li>• Use the 10 fixed blocks to match the target pattern</li>
+              <li>• Use the 7 tangram blocks to match the target pattern</li>
               <li>• Drag blocks from the library to the canvas</li>
               <li>• Select blocks to rotate, scale, or mirror them</li>
               <li>• You have 5 minutes per attempt</li>

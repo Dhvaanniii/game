@@ -131,7 +131,7 @@ const AdminDashboard: React.FC = () => {
   const manualReportSend = async () => {
     setLoadingSettings(true);
     try {
-      await apiService.sendWeeklyReport();
+      await apiService.sendWeeklyReport({});
       setUploadSuccess('Weekly report sent!');
     } catch (err) {
       setError('Failed to send weekly report');

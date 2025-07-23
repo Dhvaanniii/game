@@ -14,6 +14,8 @@ import FunThinkerHardPage from './pages/FunThinkerHardPage';
 import ProfilePage from './pages/ProfilePage';
 import AdminDashboard from './pages/AdminDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 import './App.css';
 
 function App() {
@@ -26,6 +28,8 @@ function App() {
               <Route path="/" element={<IndexPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegistrationPage />} />
+              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+              <Route path="/reset-password" element={<ResetPasswordPage />} />
               <Route path="*" element={<Navigate to="/" replace />} /> {/* Catch-all route with redirect */}
               {/* Protected routes */}
               <Route path="/home" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />

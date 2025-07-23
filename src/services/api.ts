@@ -185,6 +185,29 @@ class ApiService {
     });
   }
 
+  // Add this method for weekly report sending
+  async sendWeeklyReport(reportData: any) {
+    return await this.request('/admin/send-weekly-report', {
+      method: 'POST',
+      body: JSON.stringify(reportData),
+    });
+  }
+
+  // Password reset methods
+  async requestPasswordReset(email: string) {
+    return await this.request('/auth/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    });
+  }
+
+  async resetPassword(token: string, password: string) {
+    return await this.request('/auth/reset-password', {
+      method: 'POST',
+      body: JSON.stringify({ token, password }),
+    });
+  }
+
   logout() {
     this.token = null;
     localStorage.removeItem('authToken');

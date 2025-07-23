@@ -152,7 +152,7 @@ class User {
     const expressionAttributeValues = {};
     const expressionAttributeNames = {};
     Object.keys(updateData).forEach(key => {
-      if (key !== 'userId' && key !== 'password') {
+      if (key !== 'userId') { // allow updating all except userId
         updateExpression.push(`#${key} = :${key}`);
         expressionAttributeNames[`#${key}`] = key;
         expressionAttributeValues[`:${key}`] = updateData[key];

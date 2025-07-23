@@ -210,4 +210,9 @@ router.get('/admin/all', async (req, res) => {
   }
 });
 
+router.get('/tangram-levels', async (req, res) => {
+  const levels = await Level.find({ type: 'tangram' }); // adjust query as needed
+  res.json(levels);
+});
+
 module.exports = router;

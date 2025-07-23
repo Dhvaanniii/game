@@ -17,7 +17,7 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Routes
-app.use('/api/auth', authRoutes);
+app.use('/api/auth', require('./routes/auth'));
 app.use('/api/levels', levelRoutes);
 app.use('/api/progress', progressRoutes);
 app.use('/api/admin', adminRoutes);

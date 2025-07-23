@@ -2,8 +2,19 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const router = express.Router();
+const nodemailer = require('nodemailer');
+const crypto = require('crypto');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+
+// Configure nodemailer (development: ethereal)
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: 'projectmail0616@gmail.com',
+    pass: 'buxynthszlhkrbpi' // <-- No spaces!
+  },
+});
 
 // Register
 router.post('/register', async (req, res) => {
@@ -112,6 +123,61 @@ router.post('/coins', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error('Update coins error:', error);
     res.status(500).json({ error: 'Failed to update coins' });
+  }
+});
+
+// Forgot Password
+router.post('/forgot-password', async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ error: 'Email is required' });
+  try {
+    const user = await User.findByEmail(email);
+    if (!user) return res.status(404).json({ error: 'No user with that email' });
+    // Generate token
+    const token = crypto.randomBytes(32).toString('hex');
+    const tokenExpiry = Date.now() + 1000 * 60 * 60; // 1 hour
+    // Store token and expiry in user (for demo, add to user record)
+    await User.updateProfile(user.userId, { resetToken: token, resetTokenExpiry: tokenExpiry });
+    // Send email
+    const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const resetUrl = `${FRONTEND_URL}/reset-password?token=${token}`; // Use your frontend URL and port here
+    await transporter.sendMail({
+      from: 'projectmail0616@gmail.com', // <-- SENDER EMAIL
+      to: user.email,
+      subject: 'Password Reset Request',
+      text: `Hello ${user.username},\n\nYou requested a password reset. Click here: ${resetUrl}\n\nIf you did not request this, please ignore this email.`,
+      html: `<p>Hello <strong>${user.username}</strong>,</p><p>You requested a password reset.</p><p><a href=\"${resetUrl}\">Reset Password</a></p><p>If you did not request this, please ignore this email.</p>`,
+    });
+    res.json({ success: true, message: 'Password reset email sent' });
+  } catch (err) {
+    console.error('Forgot password error:', err); // <--- This will show the real error in your terminal
+    res.status(500).json({ error: 'Failed to send reset email' });
+  }
+});
+
+// Reset Password
+router.post('/reset-password', async (req, res) => {
+  const { token, password } = req.body;
+  if (!token || !password) return res.status(400).json({ error: 'Token and new password required' });
+  try {
+    // Find user by token
+    const params = {
+      TableName: require('../config/dynamodb').TABLES.USERS,
+      FilterExpression: 'resetToken = :token AND resetTokenExpiry >= :now',
+      ExpressionAttributeValues: { ':token': token, ':now': Date.now() },
+    };
+    const result = await require('../config/dynamodb').docClient.scan(params).promise();
+    const user = result.Items[0];
+    if (!user) return res.status(400).json({ error: 'Invalid or expired token' });
+    // Hash new password
+    const bcrypt = require('bcryptjs');
+    const hashedPassword = await bcrypt.hash(password, 10);
+    // Update password and remove token
+    await User.updateProfile(user.userId, { password: hashedPassword, resetToken: null, resetTokenExpiry: null });
+    res.json({ success: true, message: 'Password has been reset' });
+  } catch (err) {
+    console.error('Reset password error:', err);
+    res.status(500).json({ error: 'Failed to reset password' });
   }
 });
 
