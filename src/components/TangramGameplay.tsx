@@ -51,7 +51,10 @@ const TangramGameplay: React.FC<TangramGameplayProps> = ({
   // Timer effect: if time runs out, count as failed attempt
   useEffect(() => {
     if (timeLeft === 0 && isPlaying) {
-      handleFailedAttempt('Time is up!');
+      // If time runs out, we don't need to call onAttemptFailed here
+      // as the checkSolution will handle the final attempt.
+      // We can just set a feedback message.
+      setFeedback({ open: true, success: false, message: 'Time is up!' });
     }
   }, [timeLeft, isPlaying]);
 
@@ -78,10 +81,10 @@ const TangramGameplay: React.FC<TangramGameplayProps> = ({
     if (!placedBlocks.length) return;
     const rect = canvasRef.current?.getBoundingClientRect();
     if (!rect) return;
-
+    
     const newPlacedBlocks = placedBlocks.map(block => {
-      const newX = e.clientX - rect.left - dragOffset.current.x;
-      const newY = e.clientY - rect.top - dragOffset.current.y;
+    const newX = e.clientX - rect.left - dragOffset.current.x;
+    const newY = e.clientY - rect.top - dragOffset.current.y;
       return {
         ...block,
         x: Math.max(0, Math.min(newX, rect.width - BLOCK_SIZE / 2)),
@@ -119,16 +122,16 @@ const TangramGameplay: React.FC<TangramGameplayProps> = ({
 
   // Drag logic (centered block, so only allow moving within canvas)
   const handleBlockDrag = (e: React.MouseEvent) => {
-    if (!placedBlocks.length) return;
+    if (!isPlaying || !selectedBlock) return;
     const rect = canvasRef.current?.getBoundingClientRect();
     if (!rect) return;
-    const offsetX = e.clientX - rect.left - BLOCK_SIZE / 2;
-    const offsetY = e.clientY - rect.top - BLOCK_SIZE / 2;
-    setPlacedBlocks(prev => prev.map(block => ({
-      ...block,
-      x: Math.max(0, Math.min(offsetX, CANVAS_SIZE - BLOCK_SIZE)),
-      y: Math.max(0, Math.min(offsetY, CANVAS_SIZE - BLOCK_SIZE)),
-    })));
+    const offsetX = e.clientX - rect.left;
+    const offsetY = e.clientY - rect.top;
+    setPlacedBlocks(prev => prev.map(block => 
+      block.id === selectedBlock
+        ? { ...block, x: Math.max(0, Math.min(offsetX - (block.x || 0), CANVAS_SIZE - ((FIXED_TANGRAM_BLOCKS.find(fb => fb.id === block.blockId)?.sizePercent || 0) / 100) * CANVAS_SIZE)), y: Math.max(0, Math.min(offsetY - (block.y || 0), CANVAS_SIZE - ((FIXED_TANGRAM_BLOCKS.find(fb => fb.id === block.blockId)?.sizePercent || 0) / 100) * CANVAS_SIZE)) }
+        : block
+    ));
   };
 
   // Rotation logic
@@ -145,7 +148,13 @@ const TangramGameplay: React.FC<TangramGameplayProps> = ({
   const clearBlock = () => {
     setPlacedBlocks(prev => prev.filter(block => block.id !== selectedBlock));
     setSelectedBlock(null);
-    handleFailedAttempt('Cleared the block.');
+    // If the block was the last one, reset the game
+    if (placedBlocks.length === 1) {
+      setShowAnswer(false);
+      setRotation(0);
+      setAttempts(1);
+      setFeedback({ open: false, success: false, message: '' });
+    }
   };
 
   // Reset level
@@ -154,85 +163,30 @@ const TangramGameplay: React.FC<TangramGameplayProps> = ({
     setSelectedBlock(null);
     setShowAnswer(false);
     setRotation(0);
-    handleFailedAttempt('Level reset.');
+    setAttempts(1);
+    setFeedback({ open: false, success: false, message: '' });
   };
 
-  // Attempt logic
-  const recordAttempt = (points: number, completed: boolean, correct: boolean = false) => {
-    const timeUsed = 300 - timeLeft;
-    setAttemptHistory(prev => [...prev, { number: attempts, correct, timeUsed, points }]);
-    onComplete(attempts, timeUsed, points);
-    if (completed) {
-      setTimeout(() => setShowSummary(true), 500);
-      setAttempts(1);
-      setShowAnswer(false);
-      setPlacedBlocks([]);
-      setRotation(0);
-    } else {
-      setAttempts(attempts + 1);
-    }
-  };
-
-  const handleFailedAttempt = (msg: string) => {
-    if (attempts >= 3) {
-      setShowAnswer(true);
-      setFeedback({ open: true, success: false, message: '3 attempts used. Here is the answer. 0 points awarded.' });
-      setTimeout(() => {
-        setFeedback({ open: false, success: false, message: '' });
-        recordAttempt(0, true, false);
-      }, 2000);
-    } else {
-      setFeedback({ open: true, success: false, message: `${msg} Attempt ${attempts} of 3.` });
-      setTimeout(() => setFeedback({ open: false, success: false, message: '' }), 1500);
-      recordAttempt(0, false, false);
-    }
-  };
-
-  // Only check on Finish
-  const checkSolution = async () => {
-    if (!placedBlocks.length) {
-      handleFailedAttempt('No blocks placed.');
-      return;
-    }
-    try {
-      const response = await fetch(`/api/levels/${level}/validate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ arrangement: placedBlocks }),
-      });
-      const result = await response.json();
-      if (result.success) {
-        const points = attempts === 1 ? 300 : attempts === 2 ? 200 : 100;
-        setFeedback({ open: true, success: true, message: 'Congratulations! You solved the puzzle.' });
-        setTimeout(() => {
-          setFeedback({ open: false, success: false, message: '' });
-          recordAttempt(points, true, true);
-        }, 1500);
-      } else {
-        handleFailedAttempt('Incorrect arrangement.');
-      }
-    } catch (error) {
-      setFeedback({ open: true, success: false, message: 'Error validating solution. Please try again.' });
-      setTimeout(() => setFeedback({ open: false, success: false, message: '' }), 1500);
-      console.error(error);
-    }
+  const checkSolution = () => {
+    if (!isPlaying || placedBlocks.length === 0) return;
+    
+    // Calculate points based on attempt number
+    const points = currentAttempt === 1 ? 300 : currentAttempt === 2 ? 200 : 100;
+    const timeUsed = 300 - timeLeft; // 5 minutes - remaining time
+    
+    onComplete(currentAttempt, timeUsed, points);
   };
 
   const renderBlock = (block: PlacedBlock) => {
     const fixedBlock = FIXED_TANGRAM_BLOCKS.find(fb => fb.id === block.blockId);
     if (!fixedBlock) return null;
 
-    // Use sizePercent from the block data to set the width/height of each block relative to the canvas
-    // Make the canvas responsive and add a subtle grid background
-    // Improve UI/UX for clarity and modern look
-    const blockSize = (fixedBlock.sizePercent / 100) * CANVAS_SIZE;
-
     const baseStyle = {
       position: 'absolute' as const,
       left: block.x,
       top: block.y,
       transform: `rotate(${block.rotation}deg) scale(${block.scale}) ${block.isMirrored ? 'scaleX(-1)' : ''}`,
-      cursor: 'move',
+      cursor: isPlaying ? 'move' : 'default',
       transition: selectedBlock === block.id ? 'none' : 'all 0.2s ease',
       zIndex: selectedBlock === block.id ? 1000 : block.zIndex,
     };
@@ -248,8 +202,8 @@ const TangramGameplay: React.FC<TangramGameplayProps> = ({
         }}
       >
         <svg 
-          width={blockSize} 
-          height={blockSize} 
+          width={fixedBlock.defaultSize} 
+          height={fixedBlock.defaultSize} 
           viewBox="0 0 100 100"
         >
           <path
@@ -270,6 +224,24 @@ const TangramGameplay: React.FC<TangramGameplayProps> = ({
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const getTargetImageUrl = () => {
+    try {
+      // Load from uploaded PDF outlines
+      const levels = JSON.parse(localStorage.getItem(`${category}-levels`) || '[]');
+      const currentLevel = levels.find((l: any) => l.levelNumber === level);
+      
+      if (currentLevel && currentLevel.outlineUrl) {
+        return currentLevel.outlineUrl;
+      }
+      
+      // Fallback to placeholder
+      return `https://via.placeholder.com/600x400/e5e7eb/6b7280?text=${category.toUpperCase()}+Level+${level}`;
+    } catch (error) {
+      console.error('Error loading level image:', error);
+      return `https://via.placeholder.com/600x400/e5e7eb/6b7280?text=${category.toUpperCase()}+Level+${level}`;
+    }
+  };
+
   const getPointsForAttempt = (attempt: number) => {
     switch (attempt) {
       case 1: return 300;
@@ -279,7 +251,11 @@ const TangramGameplay: React.FC<TangramGameplayProps> = ({
     }
   };
 
-  // UI Layout
+  // 1. Three-column layout
+  // 2. Large, centered canvas
+  // 3. Compact block library with info at top
+  // 4. Controls in right column
+  // 5. Robust, game-like logic for all actions
   return (
     <div className="flex w-full h-[90vh]">
       {/* Left: Block Library */}
@@ -291,11 +267,11 @@ const TangramGameplay: React.FC<TangramGameplayProps> = ({
       <div className="flex-1 flex flex-col items-center justify-center bg-gray-50 relative">
         <div
           className="relative w-[600px] h-[600px] bg-white border-2 border-gray-300 rounded-lg shadow-lg overflow-hidden"
-          style={{
-            backgroundImage: `
-              linear-gradient(to right, #e5e7eb 1px, transparent 1px),
-              linear-gradient(to bottom, #e5e7eb 1px, transparent 1px)
-            `,
+                style={{
+                  backgroundImage: `
+                    linear-gradient(to right, #e5e7eb 1px, transparent 1px),
+                    linear-gradient(to bottom, #e5e7eb 1px, transparent 1px)
+                  `,
             backgroundSize: '40px 40px',
           }}
         >
@@ -316,31 +292,69 @@ const TangramGameplay: React.FC<TangramGameplayProps> = ({
             />
           )}
           {/* Placed Blocks */}
-          {placedBlocks.map(renderBlock)}
+          {placedBlocks.map(block => {
+            const fixedBlock = FIXED_TANGRAM_BLOCKS.find(fb => fb.id === block.blockId);
+            if (!fixedBlock) return null;
+            const blockSize = (fixedBlock.sizePercent / 100) * CANVAS_SIZE;
+            return (
+              <div
+                key={block.id}
+                style={{
+                  position: 'absolute',
+                  left: block.x,
+                  top: block.y,
+                  width: blockSize,
+                  height: blockSize,
+                  cursor: isPlaying ? 'move' : 'not-allowed',
+                  zIndex: 10,
+                  transform: `rotate(${block.rotation || 0}deg)`
+                }}
+                title={fixedBlock.label}
+                className={`transition-all duration-200 ${selectedBlock === block.id ? 'ring-4 ring-blue-400 shadow-xl' : 'hover:ring-2 hover:ring-blue-200'}`}
+                onMouseDown={isPlaying ? (e) => handleMouseDown(e, block.id) : undefined}
+                onClick={() => setSelectedBlock(block.id)}
+              >
+                <svg width={blockSize} height={blockSize} viewBox="0 0 100 100">
+                  <path
+                    d={fixedBlock.svgPath}
+                    fill={fixedBlock.color}
+                    stroke="#1F2937"
+                    strokeWidth={3}
+                    filter={'drop-shadow(0 4px 12px rgba(0,0,0,0.3))'}
+                  />
+                </svg>
+                </div>
+            );
+          })}
           {/* Instructions Overlay */}
           {!placedBlocks.length && !showAnswer && (
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <div className="text-center text-gray-500 bg-white/80 rounded-lg p-6 shadow">
                 <div className="text-lg font-semibold mb-2">Select and place a tangram block to match the outline</div>
                 <div className="text-sm">Rotate and move the block to fit the background shape.</div>
-              </div>
+                  </div>
+                </div>
+              )}
             </div>
-          )}
-        </div>
         {/* Rotation Slider */}
-        {placedBlocks.length > 0 && (
+        {isPlaying && selectedBlock && (
           <div className="flex flex-col items-center mt-4">
-            <label className="text-sm font-medium text-gray-700 mb-1">Rotation: {rotation}&deg;</label>
+            <label className="text-sm font-medium text-gray-700 mb-1">Rotation</label>
             <input
               type="range"
               min={0}
               max={359}
-              value={rotation}
-              onChange={handleRotationChange}
+              value={placedBlocks.find(b => b.id === selectedBlock)?.rotation || 0}
+              onChange={e => {
+                const angle = parseInt(e.target.value, 10);
+                setPlacedBlocks(prev => prev.map(block =>
+                  block.id === selectedBlock ? { ...block, rotation: angle } : block
+                ));
+              }}
               className="w-64"
             />
-          </div>
-        )}
+              </div>
+            )}
       </div>
       {/* Right: Game Info and Controls */}
       <div className="w-1/5 min-w-[220px] bg-white border-l flex flex-col items-center py-6 gap-6">
@@ -358,7 +372,8 @@ const TangramGameplay: React.FC<TangramGameplayProps> = ({
         <div className="flex flex-col gap-3 w-full px-4">
           <button
             onClick={checkSolution}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-lg font-semibold text-lg shadow transition-all duration-200 active:scale-95"
+            disabled={placedBlocks.length !== 7}
+            className={`w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-lg font-semibold text-lg shadow transition-all duration-200 active:scale-95 ${placedBlocks.length !== 7 ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             <CheckCircle className="w-5 h-5" /> Finish
           </button>
@@ -372,9 +387,9 @@ const TangramGameplay: React.FC<TangramGameplayProps> = ({
             onClick={resetLevel}
             className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-200 hover:bg-blue-300 text-blue-700 rounded-lg font-medium shadow transition-all duration-200 active:scale-95"
           >
-            <RefreshCw className="w-5 h-5" /> Reset Level
+            <RefreshCw className="w-5 h-5" /> Restart
           </button>
-        </div>
+      </div>
         {/* Feedback always visible */}
         {feedback.open && (
           <div className={`mt-4 flex flex-col items-center gap-2 ${feedback.success ? 'text-green-700' : 'text-red-700'}`}> 

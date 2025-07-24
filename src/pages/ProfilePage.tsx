@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import Header from '../components/Header';
 import { getCountries, getStates, getCities, hasStates, hasCities, isStateRequired, isCityRequired } from '../data/locationData';
 import { User, Mail, Globe, School, BookOpen, MapPin, Edit2, Save, X } from 'lucide-react';
+import { apiService } from '../services/api';
 
 const ProfilePage: React.FC = () => {
   const { user, updateProfile } = useAuth();
@@ -22,6 +23,13 @@ const ProfilePage: React.FC = () => {
   const [availableCities, setAvailableCities] = useState<string[]>([]);
   const [isStateRequired, setIsStateRequired] = useState(true);
   const [isCityRequired, setIsCityRequired] = useState(true);
+  const [showChangePassword, setShowChangePassword] = useState(false);
+  const [oldPassword, setOldPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [passwordSuccess, setPasswordSuccess] = useState('');
+  const [isChanging, setIsChanging] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -107,6 +115,47 @@ const ProfilePage: React.FC = () => {
       } else {
         setIsCityRequired(!countryHasStates);
       }
+    }
+  };
+
+  const validatePassword = (password: string): { isValid: boolean; message: string } => {
+    if (!password) return { isValid: false, message: 'Password is required' };
+    if (password.length < 8) return { isValid: false, message: 'Password must be at least 8 characters' };
+    if (!/[A-Z]/.test(password)) return { isValid: false, message: 'Password must include an uppercase letter' };
+    if (!/[a-z]/.test(password)) return { isValid: false, message: 'Password must include a lowercase letter' };
+    if (!/\d/.test(password)) return { isValid: false, message: 'Password must include a number' };
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) return { isValid: false, message: 'Password must include a special character' };
+    return { isValid: true, message: '' };
+  };
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasswordError('');
+    setPasswordSuccess('');
+    if (!oldPassword || !newPassword || !confirmPassword) {
+      setPasswordError('All fields are required.');
+      return;
+    }
+    const validation = validatePassword(newPassword);
+    if (!validation.isValid) {
+      setPasswordError(validation.message);
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordError('New password and confirm password do not match.');
+      return;
+    }
+    setIsChanging(true);
+    try {
+      await apiService.changePassword(oldPassword, newPassword, confirmPassword);
+      setPasswordSuccess('Password changed successfully.');
+      setOldPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (err: any) {
+      setPasswordError(err.message || 'Failed to change password.');
+    } finally {
+      setIsChanging(false);
     }
   };
 
@@ -360,6 +409,60 @@ const ProfilePage: React.FC = () => {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Change Password Section */}
+        <div className="mt-8">
+          <button
+            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold"
+            onClick={() => setShowChangePassword((v) => !v)}
+          >
+            {showChangePassword ? 'Hide Change Password' : 'Change Password'}
+          </button>
+          {showChangePassword && (
+            <form onSubmit={handleChangePassword} className="mt-4 space-y-4 max-w-md">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Old Password</label>
+                <input
+                  type="password"
+                  value={oldPassword}
+                  onChange={e => setOldPassword(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={e => setNewPassword(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                  required
+                />
+                <p className="text-xs text-gray-500 mt-1">Password must be at least 8 characters and include uppercase, lowercase, number, and special character.</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={e => setConfirmPassword(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                  required
+                />
+              </div>
+              {passwordError && <div className="text-red-600 text-sm">{passwordError}</div>}
+              {passwordSuccess && <div className="text-green-600 text-sm">{passwordSuccess}</div>}
+              <button
+                type="submit"
+                className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-semibold"
+                disabled={isChanging}
+              >
+                {isChanging ? 'Changing...' : 'Change Password'}
+              </button>
+            </form>
+          )}
         </div>
       </main>
     </div>
