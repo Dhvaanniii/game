@@ -99,6 +99,23 @@ class User {
     }
   }
 
+  static async findByUsernameOrEmail(identifier) {
+    // Try email first (if it looks like an email), else try username, then fallback
+    if (identifier.includes('@')) {
+      const byEmail = await this.findByEmail(identifier);
+      if (byEmail) return byEmail;
+    }
+    // Try username
+    const byUsername = await this.findByUsername(identifier);
+    if (byUsername) return byUsername;
+    // If identifier is not an email, try as email anyway
+    if (!identifier.includes('@')) {
+      const byEmail = await this.findByEmail(identifier);
+      if (byEmail) return byEmail;
+    }
+    return null;
+  }
+
   static async findById(userId) {
     const params = {
       TableName: TABLES.USERS,

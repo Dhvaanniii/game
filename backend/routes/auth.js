@@ -52,29 +52,28 @@ router.post('/register', async (req, res) => {
 // Login
 router.post('/login', async (req, res) => {
   try {
-    const { username, password } = req.body;
-
-    // Find user by username
-    const user = await User.findByUsername(username);
+    // Accept either 'username' or 'email' as 'identifier'
+    const identifier = req.body.username || req.body.email || req.body.identifier;
+    const { password } = req.body;
+    if (!identifier || !password) {
+      return res.status(400).json({ error: 'Identifier and password are required' });
+    }
+    // Find user by username or email
+    const user = await User.findByUsernameOrEmail(identifier);
     if (!user) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
-
     // Validate password
     const isValidPassword = await User.validatePassword(password, user.password);
     if (!isValidPassword) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
-
     // Update last login
     await User.updateLastLogin(user.userId);
-
     // Generate JWT token (sessionId logic removed)
     const token = jwt.sign({ userId: user.userId }, JWT_SECRET, { expiresIn: '7d' });
-
     // Remove password from response
     const { password: _, ...userWithoutPassword } = user;
-
     res.json({
       success: true,
       user: userWithoutPassword,

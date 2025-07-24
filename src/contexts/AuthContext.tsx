@@ -4,7 +4,7 @@ import type { User } from '../types/user';
 
 interface AuthContextType {
   user: User | null;
-  login: (username: string, password: string) => Promise<{ success: boolean; userType?: 'admin' | 'user' }>;
+  login: (identifier: string, password: string) => Promise<{ success: boolean; userType?: 'admin' | 'user' }>;
   register: (userData: Omit<User, 'id' | 'coins' | 'userType' | 'createdAt'>) => Promise<boolean>;
   logout: () => void;
   updateProfile: (userData: Partial<User>) => void;
@@ -59,9 +59,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const login = async (username: string, password: string): Promise<{ success: boolean; userType?: 'admin' | 'user' }> => {
+  const login = async (identifier: string, password: string): Promise<{ success: boolean; userType?: 'admin' | 'user' }> => {
     try {
-      const response = await apiService.login(username, password);
+      const response = await apiService.login(identifier, password);
       if (response.success) {
         setUser(response.user);
         localStorage.setItem('user', JSON.stringify(response.user));

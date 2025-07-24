@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { User, Lock, LogIn } from 'lucide-react';
 
 const LoginPage: React.FC = () => {
-  const [username, setUsername] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -17,7 +17,7 @@ const LoginPage: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const result = await login(username, password);
+      const result = await login(identifier, password);
       if (result.success) {
         const userType = result.userType?.trim();
         if (userType === 'admin') {
@@ -26,7 +26,7 @@ const LoginPage: React.FC = () => {
           navigate('/home');
         }
       } else {
-        setError('Invalid username or password');
+        setError('Invalid username/email or password');
       }
     } catch (err) {
       setError('Login failed. Please try again.');
@@ -48,18 +48,18 @@ const LoginPage: React.FC = () => {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
-              Username
+            <label htmlFor="identifier" className="block text-sm font-medium text-gray-700 mb-1">
+              Username or Email
             </label>
             <div className="relative">
               <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
                 type="text"
-                id="username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                id="identifier"
+                value={identifier}
+                onChange={(e) => setIdentifier(e.target.value)}
                 className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                placeholder="Enter your username"
+                placeholder="Enter your username or email"
                 required
               />
             </div>
