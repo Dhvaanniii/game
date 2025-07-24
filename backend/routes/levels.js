@@ -199,6 +199,39 @@ router.post('/:levelId/complete', async (req, res) => {
   }
 });
 
+// Validate tangram solution
+router.post('/:levelId/validate', async (req, res) => {
+  try {
+    const { levelId } = req.params;
+    const { arrangement } = req.body; // array of placed blocks
+
+    // Load the correct answer arrangement for this level
+    const level = await Level.findById(levelId);
+    if (!level || !level.correctAnswer) {
+      return res.status(400).json({ error: 'No correct answer set for this level.' });
+    }
+
+    // correctAnswer is stored as JSON string, parse it
+    let correctArrangement;
+    try {
+      correctArrangement = typeof level.correctAnswer === 'string' ? JSON.parse(level.correctAnswer) : level.correctAnswer;
+    } catch (e) {
+      return res.status(500).json({ error: 'Invalid correct answer format.' });
+    }
+
+    // Simple deep equality check (order and values must match)
+    const isEqual = (a, b) => {
+      return JSON.stringify(a) === JSON.stringify(b);
+    };
+
+    const isCorrect = isEqual(arrangement, correctArrangement);
+    res.json({ success: isCorrect });
+  } catch (error) {
+    console.error('Validate tangram solution error:', error);
+    res.status(500).json({ error: 'Failed to validate solution' });
+  }
+});
+
 // Get all levels (admin)
 router.get('/admin/all', async (req, res) => {
   try {

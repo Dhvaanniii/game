@@ -8,6 +8,8 @@ export interface FixedBlock {
   defaultSize: number;
   canMirror: boolean;
   color: string;
+  sizePercent: number; // Add sizePercent to each block definition
+  label: string; // Add label property to each block for tooltips
 }
 
 export const FIXED_TANGRAM_BLOCKS: FixedBlock[] = [
@@ -20,6 +22,8 @@ export const FIXED_TANGRAM_BLOCKS: FixedBlock[] = [
     defaultSize: 100,
     canMirror: false,
     color: '#F87171', // Red
+    sizePercent: 25,
+    label: 'Large Triangle',
   },
   {
     id: 'large-triangle-2',
@@ -30,6 +34,8 @@ export const FIXED_TANGRAM_BLOCKS: FixedBlock[] = [
     defaultSize: 100,
     canMirror: false,
     color: '#60A5FA', // Blue
+    sizePercent: 25,
+    label: 'Large Triangle',
   },
   {
     id: 'medium-triangle',
@@ -39,7 +45,9 @@ export const FIXED_TANGRAM_BLOCKS: FixedBlock[] = [
     svgPath: 'M 0 0 L 50 50 L 100 0 Z',
     defaultSize: 70,
     canMirror: false,
-    color: '#34D399', // Green
+    color: '#FBBF24', // Yellow
+    sizePercent: 12.5,
+    label: 'Medium Triangle',
   },
   {
     id: 'small-triangle-1',
@@ -49,7 +57,9 @@ export const FIXED_TANGRAM_BLOCKS: FixedBlock[] = [
     svgPath: 'M 0 0 L 50 50 L 0 100 Z',
     defaultSize: 50,
     canMirror: false,
-    color: '#FBBF24', // Yellow
+    color: '#60A5FA', // Blue
+    sizePercent: 12.5,
+    label: 'Small Triangle',
   },
   {
     id: 'small-triangle-2',
@@ -59,7 +69,9 @@ export const FIXED_TANGRAM_BLOCKS: FixedBlock[] = [
     svgPath: 'M 100 0 L 100 100 L 50 50 Z',
     defaultSize: 50,
     canMirror: false,
-    color: '#A78BFA', // Purple
+    color: '#60A5FA', // Blue
+    sizePercent: 12.5,
+    label: 'Small Triangle',
   },
   {
     id: 'square',
@@ -69,7 +81,9 @@ export const FIXED_TANGRAM_BLOCKS: FixedBlock[] = [
     svgPath: 'M 0 0 L 50 0 L 50 50 L 0 50 Z',
     defaultSize: 50,
     canMirror: false,
-    color: '#F472B6', // Pink
+    color: '#FBBF24', // Orange
+    sizePercent: 12.5,
+    label: 'Square',
   },
   {
     id: 'parallelogram',
@@ -79,6 +93,8 @@ export const FIXED_TANGRAM_BLOCKS: FixedBlock[] = [
     svgPath: 'M 0 0 L 60 0 L 50 50 L -10 50 Z',
     defaultSize: 60,
     canMirror: true,
-    color: '#38BDF8', // Cyan
+    color: '#A78BFA', // Purple
+    sizePercent: 12.5,
+    label: 'Parallelogram',
   },
 ];
