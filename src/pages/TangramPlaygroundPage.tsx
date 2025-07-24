@@ -50,11 +50,22 @@ const TangramPlaygroundPage: React.FC = () => {
   const handleReset = () => {
     setIsPlaying(false);
     setTimeLeft(300);
-    setAttempts(0);
+    setAttempts(prev => prev + 1); // Increment attempts on restart
     setGameCompleted(false);
     setShowResult(false);
     setStars(0);
     setPoints(0);
+  };
+
+  const handleBackToLevels = () => {
+    setIsPlaying(false);
+    setTimeLeft(300);
+    setAttempts(0); // Reset attempts when going back
+    setGameCompleted(false);
+    setShowResult(false);
+    setStars(0);
+    setPoints(0);
+    navigate('/tangrams');
   };
 
   const handleGameComplete = (attemptNumber: number, _timeUsed: number, earnedPoints: number) => {
@@ -167,7 +178,7 @@ const TangramPlaygroundPage: React.FC = () => {
               <button
                 onClick={handleStart}
                 disabled={gameCompleted}
-                className="flex items-center space-x-2 bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-xl font-semibold transition-colors disabled:opacity-50"
+                className="flex items-center space-x-2 bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-xl font-semibold transition-colors disabled:opacity-50 shadow-md"
               >
                 <Play className="w-5 h-5" />
                 <span>Start Game</span>
@@ -175,7 +186,7 @@ const TangramPlaygroundPage: React.FC = () => {
             ) : (
               <button
                 onClick={handlePause}
-                className="flex items-center space-x-2 bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-3 rounded-xl font-semibold transition-colors"
+                className="flex items-center space-x-2 bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-3 rounded-xl font-semibold transition-colors shadow-md"
               >
                 <Pause className="w-5 h-5" />
                 <span>Pause</span>
@@ -184,15 +195,15 @@ const TangramPlaygroundPage: React.FC = () => {
 
             <button
               onClick={handleReset}
-              className="flex items-center space-x-2 bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-xl font-semibold transition-colors"
+              className="flex items-center space-x-2 bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-xl font-semibold transition-colors shadow-md"
             >
               <RotateCcw className="w-5 h-5" />
-              <span>Reset</span>
+              <span>Restart</span>
             </button>
 
             <button
-              onClick={() => navigate('/tangrams')}
-              className="flex items-center space-x-2 bg-purple-500 hover:bg-purple-600 text-white px-6 py-3 rounded-xl font-semibold transition-colors"
+              onClick={handleBackToLevels}
+              className="flex items-center space-x-2 bg-purple-500 hover:bg-purple-600 text-white px-6 py-3 rounded-xl font-semibold transition-colors shadow-md"
             >
               <Home className="w-5 h-5" />
               <span>Back to Levels</span>

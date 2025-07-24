@@ -39,7 +39,7 @@ const FixedTangramBlocksLibrary: React.FC<FixedTangramBlocksLibraryProps> = ({
           <strong>Classic Tangram:</strong> Use these 7 blocks to solve any outline. Drag them to match the target outline!
         </p>
       </div>
-      <div className="grid grid-cols-2 gap-3 w-full">
+      <div className="grid grid-cols-2 gap-3 w-full max-h-96 overflow-y-auto">
         {FIXED_TANGRAM_BLOCKS.map((block) => (
           <button
             key={block.id}
